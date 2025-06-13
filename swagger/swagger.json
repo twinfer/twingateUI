@@ -1,0 +1,3983 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "TwinCore Gateway is a Web of Things (WoT) gateway that manages IoT devices through W3C Thing Descriptions. It dynamically generates data processing pipelines using Benthos and exposes HTTP APIs for device interaction.",
+        "title": "TwinCore Gateway API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "TwinCore API Support",
+            "url": "http://www.twinfer.com/support",
+            "email": "support@twinfer.com"
+        },
+        "license": {
+            "name": "Commercial License",
+            "url": "http://www.twinfer.com/license"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api",
+    "paths": {
+        "/admin/auth/providers": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all configured authentication providers",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth Providers"
+                ],
+                "summary": "List all authentication providers",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.AuthProviderListResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new authentication provider configuration",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth Providers"
+                ],
+                "summary": "Create authentication provider",
+                "parameters": [
+                    {
+                        "description": "Provider configuration",
+                        "name": "provider",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.CreateAuthProviderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/types.AuthProviderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Provider already exists",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/auth/providers/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve a specific authentication provider by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth Providers"
+                ],
+                "summary": "Get authentication provider",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provider ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.AuthProviderResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Provider not found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing authentication provider configuration",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth Providers"
+                ],
+                "summary": "Update authentication provider",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provider ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated provider configuration",
+                        "name": "provider",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.UpdateAuthProviderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.AuthProviderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Provider not found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete an authentication provider configuration",
+                "tags": [
+                    "Auth Providers"
+                ],
+                "summary": "Delete authentication provider",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provider ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Provider not found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/auth/providers/{id}/test": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Test connection and configuration for an authentication provider",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth Providers"
+                ],
+                "summary": "Test authentication provider",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provider ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.AuthProviderTestResult"
+                        }
+                    },
+                    "404": {
+                        "description": "Provider not found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/auth/providers/{id}/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve users from an external authentication provider (if supported)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth Providers"
+                ],
+                "summary": "List users from authentication provider",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provider ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search query",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Maximum number of users to return",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.ProviderUserListResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Provider not found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "501": {
+                        "description": "Provider does not support user listing",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/config": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve the current merged configuration from all sources",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Configuration"
+                ],
+                "summary": "Get current configuration",
+                "responses": {
+                    "200": {
+                        "description": "Current configuration",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ConfigResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve configuration",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update the application configuration with new values",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Configuration"
+                ],
+                "summary": "Update configuration",
+                "parameters": [
+                    {
+                        "description": "Configuration updates",
+                        "name": "config",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Configuration updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ConfigResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid configuration data",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to update configuration",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/config/caddy": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve the current generated Caddy configuration",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Configuration"
+                ],
+                "summary": "Get Caddy configuration",
+                "responses": {
+                    "200": {
+                        "description": "Caddy configuration",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ConfigResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve Caddy configuration",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "501": {
+                        "description": "Caddy configuration access not supported",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/config/caddy/settings": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve only the Caddy-specific configuration settings",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Configuration"
+                ],
+                "summary": "Get Caddy settings",
+                "responses": {
+                    "200": {
+                        "description": "Caddy settings",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ConfigResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Caddy settings not found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve Caddy settings",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update only the Caddy-specific configuration settings",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Configuration"
+                ],
+                "summary": "Update Caddy settings",
+                "parameters": [
+                    {
+                        "description": "Caddy settings to update",
+                        "name": "settings",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Caddy settings updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ConfigResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid settings data",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to update Caddy settings",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/config/diff": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get the differences between two configuration versions",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Configuration"
+                ],
+                "summary": "Get configuration diff",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source version number",
+                        "name": "from",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Target version number (current if not specified)",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Configuration differences",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ConfigDiffResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid version parameters",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to generate configuration diff",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "501": {
+                        "description": "Configuration diff not supported",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/config/history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve the history of configuration changes with diffs",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Configuration"
+                ],
+                "summary": "Get configuration history",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Maximum number of history entries",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Configuration history",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ConfigHistoryResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve configuration history",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "501": {
+                        "description": "Configuration history not supported",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/config/patch": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Apply a JSON diff patch to update configuration",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Configuration"
+                ],
+                "summary": "Apply configuration patch",
+                "parameters": [
+                    {
+                        "description": "JSON patch data",
+                        "name": "patch",
+                        "in": "body",
+                        "required": true,
+                        "schema": {}
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Patch applied successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ConfigResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid patch data",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to apply patch",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "501": {
+                        "description": "Configuration patches not supported",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/config/reload": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Reload configuration from persistent storage",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Configuration"
+                ],
+                "summary": "Reload configuration",
+                "responses": {
+                    "200": {
+                        "description": "Configuration reloaded successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ConfigResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to reload configuration",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "501": {
+                        "description": "Configuration reload not supported",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/config/rollback/{version}": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Rollback configuration to a previous version",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Configuration"
+                ],
+                "summary": "Rollback configuration",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Configuration version to rollback to",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Configuration rolled back successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ConfigResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid version number",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to rollback configuration",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "501": {
+                        "description": "Configuration rollback not supported",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/directory/discover/compatible/{thingId}": {
+            "get": {
+                "description": "Find Things that can work together with the specified Thing",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Directory"
+                ],
+                "summary": "Discover compatible Things",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thing ID",
+                        "name": "thingId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/wot.ThingDescription"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/directory/discover/hierarchy/{thingId}": {
+            "get": {
+                "description": "Get hierarchical relationships starting from a root Thing",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Directory"
+                ],
+                "summary": "Get Thing hierarchy",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Root Thing ID",
+                        "name": "thingId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 5,
+                        "description": "Maximum depth",
+                        "name": "maxDepth",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/discovery.ThingHierarchy"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/directory/discover/protocol/{protocol}": {
+            "get": {
+                "description": "Find all Things that support a specific protocol",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Directory"
+                ],
+                "summary": "Discover Things by protocol",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Protocol name (http, mqtt, coap, etc.)",
+                        "name": "protocol",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/wot.ThingDescription"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/directory/relationships": {
+            "post": {
+                "description": "Create a relationship between two Things",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Directory"
+                ],
+                "summary": "Add Thing relationship",
+                "parameters": [
+                    {
+                        "description": "Relationship data",
+                        "name": "relationship",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/directory/relationships/{parentId}/{childId}": {
+            "delete": {
+                "description": "Remove the relationship between two Things",
+                "tags": [
+                    "Directory"
+                ],
+                "summary": "Remove Thing relationship",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Parent Thing ID",
+                        "name": "parentId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Child Thing ID",
+                        "name": "childId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/directory/search": {
+            "post": {
+                "description": "Search for Things using various filters and criteria",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Directory"
+                ],
+                "summary": "Search for Things",
+                "parameters": [
+                    {
+                        "description": "Search query",
+                        "name": "query",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/discovery.SearchQuery"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/discovery.SearchResult"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/directory/search/capabilities": {
+            "post": {
+                "description": "Find Things matching specific capability requirements",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Directory"
+                ],
+                "summary": "Search Things by capabilities",
+                "parameters": [
+                    {
+                        "description": "Capability requirements",
+                        "name": "query",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/discovery.CapabilityQuery"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/wot.ThingDescription"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/directory/search/semantic": {
+            "get": {
+                "description": "Find Things with specific semantic annotations",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Directory"
+                ],
+                "summary": "Search Things by semantic type",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Semantic type (e.g., 'TemperatureSensor')",
+                        "name": "type",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/wot.ThingDescription"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/directory/search/text": {
+            "get": {
+                "description": "Full-text search across Thing Descriptions",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Directory"
+                ],
+                "summary": "Search Things by text",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search text",
+                        "name": "q",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Result limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/discovery.SearchResult"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/streams": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all Benthos streams with optional filtering",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Streams"
+                ],
+                "summary": "List all streams",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by Thing ID",
+                        "name": "thing_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by stream status (running, stopped, error)",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by interaction type (property, action, event)",
+                        "name": "interaction_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 100,
+                        "description": "Maximum number of results (1-1000)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Number of results to skip",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of streams",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new Benthos stream configuration",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Streams"
+                ],
+                "summary": "Create a new stream",
+                "parameters": [
+                    {
+                        "description": "Stream creation request",
+                        "name": "stream",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.StreamCreationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Stream created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/types.StreamInfo"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/streams/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve a specific Benthos stream by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Streams"
+                ],
+                "summary": "Get stream by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Stream ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Stream information",
+                        "schema": {
+                            "$ref": "#/definitions/types.StreamInfo"
+                        }
+                    },
+                    "404": {
+                        "description": "Stream not found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/streams/{id}/start": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Start a stopped Benthos stream",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Streams"
+                ],
+                "summary": "Start a stream",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Stream ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Stream started successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Stream not found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/streams/{id}/stop": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Stop a running Benthos stream",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Streams"
+                ],
+                "summary": "Stop a stream",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Stream ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Stream stopped successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Stream not found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/things": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all registered Thing Descriptions with optional filtering and pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Things"
+                ],
+                "summary": "List all Thing Descriptions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 100,
+                        "description": "Maximum number of results (1-1000)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Number of results to skip",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by Thing ID, title, or description",
+                        "name": "filter",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of Thing Descriptions",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ThingListResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Register a new Thing Description and create associated streams and bindings",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Things"
+                ],
+                "summary": "Register a new Thing Description",
+                "parameters": [
+                    {
+                        "description": "Thing registration request",
+                        "name": "thing",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ThingRegistrationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Thing registered successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ThingRegistrationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or Thing Description",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/things/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve a specific Thing Description by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Things"
+                ],
+                "summary": "Get a Thing Description",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thing ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Include stream information in response",
+                        "name": "include_streams",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Return original Thing Description without gateway transformation",
+                        "name": "original",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Thing Description",
+                        "schema": {
+                            "$ref": "#/definitions/wot.ThingDescription"
+                        }
+                    },
+                    "404": {
+                        "description": "Thing not found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing Thing Description and regenerate streams and bindings",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Things"
+                ],
+                "summary": "Update a Thing Description",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thing ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Thing update request",
+                        "name": "thing",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ThingRegistrationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Thing updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ThingUpdateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or Thing Description",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Thing not found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Remove a Thing Description and clean up associated streams and bindings",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Things"
+                ],
+                "summary": "Delete a Thing Description",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thing ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Thing deleted successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ThingDeleteResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Thing not found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/things/{id}/actions/{name}": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Execute an action on a Thing, supporting both synchronous and asynchronous execution",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Actions"
+                ],
+                "summary": "Invoke action",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thing ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Action name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Action invocation request",
+                        "name": "action",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ActionInvocationRequest"
+                        }
+                    },
+                    {
+                        "type": "integer",
+                        "default": 30,
+                        "description": "Timeout in seconds (1-300)",
+                        "name": "timeout",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Action executed successfully (synchronous)",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ActionInvocationResponse"
+                        }
+                    },
+                    "202": {
+                        "description": "Action execution started (asynchronous)",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ActionInvocationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or action input",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Action not found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "408": {
+                        "description": "Action execution timeout",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/things/{id}/actions/{name}/status/{actionId}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get the current status and result of an asynchronous action execution",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Actions"
+                ],
+                "summary": "Get action status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thing ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Action name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Action execution ID",
+                        "name": "actionId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Action status retrieved",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ActionInvocationResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Action execution not found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/things/{id}/events/{name}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Subscribe to real-time events from a Thing via Server-Sent Events",
+                "consumes": [
+                    "text/event-stream"
+                ],
+                "produces": [
+                    "text/event-stream"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Subscribe to events",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thing ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Event name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Event filter criteria",
+                        "name": "filter",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Number of events to batch (1-100)",
+                        "name": "batch_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Subscription timeout in seconds (1-3600)",
+                        "name": "timeout",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Last event ID for resuming subscription",
+                        "name": "last_event_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Server-Sent Events stream",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Event not subscribable",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Event not found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/things/{id}/properties/{name}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Subscribe to real-time property value changes via Server-Sent Events",
+                "consumes": [
+                    "text/event-stream"
+                ],
+                "produces": [
+                    "text/event-stream"
+                ],
+                "tags": [
+                    "Properties"
+                ],
+                "summary": "Observe property changes",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thing ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Property name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Server-Sent Events stream",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Property not observable",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Property not found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update the value of a specific property on a Thing",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Properties"
+                ],
+                "summary": "Write property value",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thing ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Property name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Property value to set",
+                        "name": "property",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.PropertyWriteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Property updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.PropertyWriteResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or property value",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Property not writable",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Property not found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/profile": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get current authenticated user's profile information",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Get user profile",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.UserResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Not authenticated",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/status": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get current authentication status and user information",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Get authentication status",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.AuthStatusResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Not authenticated",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all registered user accounts (admin only)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "List all users",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page (default: 10, max: 100)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.UserListResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new user account with specified roles (admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Create new user",
+                "parameters": [
+                    {
+                        "description": "User details",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.CreateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/types.UserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "User already exists",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve a specific user account by username",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get user by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.UserResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update user account details and roles (admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Update user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated user details",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.UpdateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.UserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a user account (admin only)",
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Delete user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}/password": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Change a user's password",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Change user password",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Password change request",
+                        "name": "password",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.ChangePasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Current password incorrect",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "discovery.ActionRequirement": {
+            "type": "object",
+            "properties": {
+                "inputType": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "name": {
+                    "type": "string"
+                },
+                "outputType": {
+                    "type": "string"
+                }
+            }
+        },
+        "discovery.CapabilityQuery": {
+            "type": "object",
+            "properties": {
+                "requiredActions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/discovery.ActionRequirement"
+                    }
+                },
+                "requiredEvents": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/discovery.EventRequirement"
+                    }
+                },
+                "requiredProperties": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/discovery.PropertyRequirement"
+                    }
+                },
+                "securitySchemes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "discovery.EventRequirement": {
+            "type": "object",
+            "properties": {
+                "dataType": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "discovery.PropertyRequirement": {
+            "type": "object",
+            "properties": {
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "discovery.SearchQuery": {
+            "type": "object",
+            "properties": {
+                "@type": {
+                    "description": "Semantic filters",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "events": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "limit": {
+                    "description": "Pagination",
+                    "type": "integer"
+                },
+                "manufacturer": {
+                    "description": "Metadata filters",
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "orderBy": {
+                    "description": "Sorting",
+                    "type": "string"
+                },
+                "properties": {
+                    "description": "Property filters",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "protocols": {
+                    "description": "Protocol filters",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "text": {
+                    "description": "Text search",
+                    "type": "string"
+                }
+            }
+        },
+        "discovery.SearchResult": {
+            "type": "object",
+            "properties": {
+                "highlights": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "relevance": {
+                    "type": "number"
+                },
+                "thing": {
+                    "$ref": "#/definitions/wot.ThingDescription"
+                }
+            }
+        },
+        "discovery.ThingHierarchy": {
+            "type": "object",
+            "properties": {
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/discovery.ThingHierarchy"
+                    }
+                },
+                "level": {
+                    "type": "integer"
+                },
+                "thing": {
+                    "$ref": "#/definitions/wot.ThingDescription"
+                }
+            }
+        },
+        "handlers.ActionInvocationRequest": {
+            "type": "object",
+            "properties": {
+                "async": {
+                    "type": "boolean"
+                },
+                "input": {}
+            }
+        },
+        "handlers.ActionInvocationResponse": {
+            "type": "object",
+            "properties": {
+                "action_id": {
+                    "type": "string"
+                },
+                "async": {
+                    "type": "boolean"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "output": {},
+                "status": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.ConfigDiffResponse": {
+            "type": "object",
+            "properties": {
+                "diff": {
+                    "description": "JSON Patch operations array"
+                },
+                "from_version": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "to_version": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handlers.ConfigHistoryResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "handlers.ConfigResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "handlers.PropertyReadResponse": {
+            "type": "object",
+            "properties": {
+                "cached": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "value": {}
+            }
+        },
+        "handlers.PropertyWriteRequest": {
+            "type": "object",
+            "properties": {
+                "value": {}
+            }
+        },
+        "handlers.PropertyWriteResponse": {
+            "type": "object",
+            "properties": {
+                "timestamp": {
+                    "type": "string"
+                },
+                "updated": {
+                    "type": "boolean"
+                },
+                "value": {}
+            }
+        },
+        "handlers.ThingDeleteResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "thing_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.ThingListResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "things": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/wot.ThingDescription"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handlers.ThingRegistrationRequest": {
+            "type": "object",
+            "properties": {
+                "options": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "thing_description": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.ThingRegistrationResponse": {
+            "type": "object",
+            "properties": {
+                "registration_result": {},
+                "thing_description": {
+                    "$ref": "#/definitions/wot.ThingDescription"
+                }
+            }
+        },
+        "handlers.ThingUpdateResponse": {
+            "type": "object",
+            "properties": {
+                "thing_description": {
+                    "$ref": "#/definitions/wot.ThingDescription"
+                },
+                "update_result": {}
+            }
+        },
+        "types.AuthProviderListResponse": {
+            "type": "object",
+            "properties": {
+                "providers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.AuthProviderResponse"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "types.AuthProviderResponse": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.AuthProviderTestResult": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "types.AuthStatusResponse": {
+            "type": "object",
+            "properties": {
+                "authenticated": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "expires_at": {
+                    "type": "string",
+                    "example": "2023-12-01T11:30:00Z"
+                },
+                "token_type": {
+                    "type": "string",
+                    "example": "Bearer"
+                },
+                "user": {
+                    "$ref": "#/definitions/types.UserResponse"
+                }
+            }
+        },
+        "types.ChangePasswordRequest": {
+            "type": "object",
+            "required": [
+                "current_password",
+                "new_password"
+            ],
+            "properties": {
+                "current_password": {
+                    "type": "string",
+                    "example": "oldPassword123"
+                },
+                "new_password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "newPassword456"
+                }
+            }
+        },
+        "types.CreateAuthProviderRequest": {
+            "type": "object",
+            "required": [
+                "config",
+                "id",
+                "name",
+                "type"
+            ],
+            "properties": {
+                "config": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.CreateUserRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "disabled": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "email": {
+                    "type": "string",
+                    "example": "john@example.com"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "securePassword123"
+                },
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "[\"viewer\"",
+                        " \"operator\"]"
+                    ]
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john.doe"
+                }
+            }
+        },
+        "types.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 400
+                },
+                "details": {
+                    "type": "string",
+                    "example": "Missing required field: title"
+                },
+                "error": {
+                    "type": "string",
+                    "example": "Invalid Thing Description"
+                }
+            }
+        },
+        "types.ProcessorConfig": {
+            "description": "Configuration for a data processor in the processing pipeline",
+            "type": "object",
+            "properties": {
+                "config": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "type": {
+                    "type": "string",
+                    "example": "json_validation"
+                }
+            }
+        },
+        "types.ProviderUser": {
+            "type": "object",
+            "properties": {
+                "attributes": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.ProviderUserListResponse": {
+            "type": "object",
+            "properties": {
+                "total": {
+                    "type": "integer"
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.ProviderUser"
+                    }
+                }
+            }
+        },
+        "types.StreamCreationRequest": {
+            "description": "Request body for creating a new data processing stream",
+            "type": "object",
+            "properties": {
+                "direction": {
+                    "type": "string",
+                    "example": "input"
+                },
+                "input": {
+                    "$ref": "#/definitions/types.StreamEndpointConfig"
+                },
+                "interaction_name": {
+                    "type": "string",
+                    "example": "temperature"
+                },
+                "interaction_type": {
+                    "type": "string",
+                    "example": "properties"
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "output": {
+                    "$ref": "#/definitions/types.StreamEndpointConfig"
+                },
+                "processor_chain": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.ProcessorConfig"
+                    }
+                },
+                "thing_id": {
+                    "type": "string",
+                    "example": "device-001"
+                }
+            }
+        },
+        "types.StreamEndpointConfig": {
+            "description": "Configuration for stream input or output endpoint",
+            "type": "object",
+            "properties": {
+                "config": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "type": {
+                    "type": "string",
+                    "example": "kafka"
+                }
+            }
+        },
+        "types.StreamInfo": {
+            "description": "Information about a created data processing stream",
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "2023-12-01T10:30:00Z"
+                },
+                "direction": {
+                    "type": "string",
+                    "example": "input"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "stream-123"
+                },
+                "input": {
+                    "$ref": "#/definitions/types.StreamEndpointConfig"
+                },
+                "interaction_name": {
+                    "type": "string",
+                    "example": "temperature"
+                },
+                "interaction_type": {
+                    "type": "string",
+                    "example": "properties"
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "output": {
+                    "$ref": "#/definitions/types.StreamEndpointConfig"
+                },
+                "processor_chain": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.ProcessorConfig"
+                    }
+                },
+                "status": {
+                    "type": "string",
+                    "example": "running"
+                },
+                "thing_id": {
+                    "type": "string",
+                    "example": "device-001"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "example": "2023-12-01T10:30:00Z"
+                }
+            }
+        },
+        "types.UpdateAuthProviderRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                }
+            }
+        },
+        "types.UpdateUserRequest": {
+            "type": "object",
+            "properties": {
+                "disabled": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "email": {
+                    "type": "string",
+                    "example": "john@example.com"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "[\"admin\"]"
+                    ]
+                }
+            }
+        },
+        "types.UserListResponse": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "page": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 42
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.UserResponse"
+                    }
+                }
+            }
+        },
+        "types.UserResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "2023-12-01T10:30:00Z"
+                },
+                "disabled": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "email": {
+                    "type": "string",
+                    "example": "john@example.com"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "john.doe"
+                },
+                "last_login": {
+                    "type": "string",
+                    "example": "2023-12-01T10:30:00Z"
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "[\"viewer\"]"
+                    ]
+                },
+                "updated_at": {
+                    "type": "string",
+                    "example": "2023-12-01T10:30:00Z"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john.doe"
+                }
+            }
+        },
+        "wot.ActionAffordance": {
+            "type": "object",
+            "properties": {
+                "$comment": {
+                    "type": "string"
+                },
+                "@type": {
+                    "description": "Added for W3C WoT TD 1.1 semantic annotations",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "descriptions": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "forms": {
+                    "description": "Must contain at least one form",
+                    "type": "array",
+                    "items": {}
+                },
+                "idempotent": {
+                    "description": "Default false",
+                    "type": "boolean"
+                },
+                "input": {
+                    "$ref": "#/definitions/wot.DataSchema"
+                },
+                "output": {
+                    "$ref": "#/definitions/wot.DataSchema"
+                },
+                "safe": {
+                    "description": "Default false",
+                    "type": "boolean"
+                },
+                "synchronous": {
+                    "description": "Added for W3C WoT TD 1.1",
+                    "type": "boolean"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "titles": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "uriVariables": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/wot.DataSchema"
+                    }
+                }
+            }
+        },
+        "wot.DataSchema": {
+            "type": "object",
+            "properties": {
+                "$comment": {
+                    "type": "string"
+                },
+                "@type": {
+                    "description": "Added for W3C WoT TD 1.1",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": {
+                    "description": "bool or *DataSchema"
+                },
+                "allOf": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/wot.DataSchema"
+                    }
+                },
+                "anyOf": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/wot.DataSchema"
+                    }
+                },
+                "const": {},
+                "contentEncoding": {
+                    "type": "string"
+                },
+                "contentMediaType": {
+                    "type": "string"
+                },
+                "default": {},
+                "description": {
+                    "type": "string"
+                },
+                "descriptions": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "enum": {
+                    "type": "array",
+                    "items": {}
+                },
+                "exclusiveMaximum": {
+                    "type": "number"
+                },
+                "exclusiveMinimum": {
+                    "type": "number"
+                },
+                "format": {
+                    "description": "e.g., \"date-time\", \"uri\", \"email\"",
+                    "type": "string"
+                },
+                "items": {
+                    "description": "Array-specific"
+                },
+                "maxItems": {
+                    "type": "integer"
+                },
+                "maxLength": {
+                    "type": "integer"
+                },
+                "maximum": {
+                    "type": "number"
+                },
+                "minItems": {
+                    "type": "integer"
+                },
+                "minLength": {
+                    "type": "integer"
+                },
+                "minimum": {
+                    "description": "Number/Integer-specific",
+                    "type": "number"
+                },
+                "multipleOf": {
+                    "type": "number"
+                },
+                "not": {
+                    "$ref": "#/definitions/wot.DataSchema"
+                },
+                "observable": {
+                    "description": "Default false, relevant for PropertyAffordance",
+                    "type": "boolean"
+                },
+                "oneOf": {
+                    "description": "Logical keywords",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/wot.DataSchema"
+                    }
+                },
+                "pattern": {
+                    "description": "String-specific",
+                    "type": "string"
+                },
+                "properties": {
+                    "description": "Object-specific",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/wot.DataSchema"
+                    }
+                },
+                "propertyNames": {
+                    "$ref": "#/definitions/wot.DataSchema"
+                },
+                "readOnly": {
+                    "description": "WoT specific (often found within PropertyAffordance, but part of DataSchema concept)",
+                    "type": "boolean"
+                },
+                "required": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "description": "Common annotations specific to this DataSchema definition",
+                    "type": "string"
+                },
+                "titles": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "description": "Type and format",
+                    "type": "string"
+                },
+                "uniqueItems": {
+                    "type": "boolean"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "writeOnly": {
+                    "description": "Default false",
+                    "type": "boolean"
+                }
+            }
+        },
+        "wot.EventAffordance": {
+            "type": "object",
+            "properties": {
+                "$comment": {
+                    "type": "string"
+                },
+                "@type": {
+                    "description": "Added for W3C WoT TD 1.1 semantic annotations",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "cancellation": {
+                    "$ref": "#/definitions/wot.DataSchema"
+                },
+                "data": {
+                    "$ref": "#/definitions/wot.DataSchema"
+                },
+                "dataResponse": {
+                    "description": "Added for W3C WoT TD 1.1",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/wot.DataSchema"
+                        }
+                    ]
+                },
+                "description": {
+                    "type": "string"
+                },
+                "descriptions": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "forms": {
+                    "description": "Must contain at least one form",
+                    "type": "array",
+                    "items": {}
+                },
+                "subscription": {
+                    "$ref": "#/definitions/wot.DataSchema"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "titles": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "uriVariables": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/wot.DataSchema"
+                    }
+                }
+            }
+        },
+        "wot.Link": {
+            "type": "object",
+            "properties": {
+                "anchor": {
+                    "type": "string"
+                },
+                "href": {
+                    "type": "string"
+                },
+                "hreflang": {
+                    "description": "Added for W3C WoT TD 1.1"
+                },
+                "rel": {
+                    "type": "string"
+                },
+                "sizes": {
+                    "description": "Added for W3C WoT TD 1.1",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "Media type",
+                    "type": "string"
+                }
+            }
+        },
+        "wot.PropertyAffordance": {
+            "type": "object",
+            "properties": {
+                "$comment": {
+                    "type": "string"
+                },
+                "@type": {
+                    "description": "Added for W3C WoT TD 1.1 semantic annotations",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": {
+                    "description": "bool or *DataSchema"
+                },
+                "allOf": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/wot.DataSchema"
+                    }
+                },
+                "anyOf": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/wot.DataSchema"
+                    }
+                },
+                "const": {},
+                "contentEncoding": {
+                    "type": "string"
+                },
+                "contentMediaType": {
+                    "type": "string"
+                },
+                "default": {},
+                "description": {
+                    "type": "string"
+                },
+                "descriptions": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "enum": {
+                    "type": "array",
+                    "items": {}
+                },
+                "exclusiveMaximum": {
+                    "type": "number"
+                },
+                "exclusiveMinimum": {
+                    "type": "number"
+                },
+                "format": {
+                    "description": "e.g., \"date-time\", \"uri\", \"email\"",
+                    "type": "string"
+                },
+                "forms": {
+                    "description": "Must contain at least one form",
+                    "type": "array",
+                    "items": {}
+                },
+                "items": {
+                    "description": "Array-specific"
+                },
+                "maxItems": {
+                    "type": "integer"
+                },
+                "maxLength": {
+                    "type": "integer"
+                },
+                "maximum": {
+                    "type": "number"
+                },
+                "minItems": {
+                    "type": "integer"
+                },
+                "minLength": {
+                    "type": "integer"
+                },
+                "minimum": {
+                    "description": "Number/Integer-specific",
+                    "type": "number"
+                },
+                "multipleOf": {
+                    "type": "number"
+                },
+                "not": {
+                    "$ref": "#/definitions/wot.DataSchema"
+                },
+                "observable": {
+                    "description": "Default false, relevant for PropertyAffordance",
+                    "type": "boolean"
+                },
+                "oneOf": {
+                    "description": "Logical keywords",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/wot.DataSchema"
+                    }
+                },
+                "pattern": {
+                    "description": "String-specific",
+                    "type": "string"
+                },
+                "properties": {
+                    "description": "Object-specific",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/wot.DataSchema"
+                    }
+                },
+                "propertyNames": {
+                    "$ref": "#/definitions/wot.DataSchema"
+                },
+                "readOnly": {
+                    "description": "WoT specific (often found within PropertyAffordance, but part of DataSchema concept)",
+                    "type": "boolean"
+                },
+                "required": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "titles": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "description": "Type and format",
+                    "type": "string"
+                },
+                "uniqueItems": {
+                    "type": "boolean"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "uriVariables": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/wot.DataSchema"
+                    }
+                },
+                "writeOnly": {
+                    "description": "Default false",
+                    "type": "boolean"
+                }
+            }
+        },
+        "wot.SecurityScheme": {
+            "type": "object",
+            "properties": {
+                "@type": {
+                    "description": "e.g. \"BasicSecurityScheme\", \"OAuth2SecurityScheme\""
+                },
+                "alg": {
+                    "description": "For Bearer",
+                    "type": "string"
+                },
+                "authorization": {
+                    "description": "For Bearer, OAuth2",
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "descriptions": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "flow": {
+                    "description": "For OAuth2",
+                    "type": "string"
+                },
+                "format": {
+                    "description": "For Bearer",
+                    "type": "string"
+                },
+                "identity": {
+                    "description": "For PSK",
+                    "type": "string"
+                },
+                "in": {
+                    "description": "For apikey (location of security information), also used by some other schemes",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "For apikey (name of header/query param)",
+                    "type": "string"
+                },
+                "proxy": {
+                    "description": "URI",
+                    "type": "string"
+                },
+                "qop": {
+                    "description": "Fields for specific security schemes as per TD 1.1",
+                    "type": "string"
+                },
+                "refresh": {
+                    "description": "For OAuth2",
+                    "type": "string"
+                },
+                "scheme": {
+                    "description": "e.g. \"basic\", \"bearer\", \"apikey\", \"oauth2\" - this is the primary discriminator",
+                    "type": "string"
+                },
+                "scopes": {
+                    "description": "For OAuth2",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "token": {
+                    "description": "For OAuth2",
+                    "type": "string"
+                }
+            }
+        },
+        "wot.ThingDescription": {
+            "description": "Complete W3C WoT Thing Description 1.1 specification compliant structure",
+            "type": "object",
+            "properties": {
+                "$comment": {
+                    "type": "string"
+                },
+                "@context": {
+                    "type": "string",
+                    "example": "https://www.w3.org/2022/wot/td/v1.1"
+                },
+                "@type": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "[\"Thing\"]"
+                    ]
+                },
+                "actions": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/wot.ActionAffordance"
+                    }
+                },
+                "base": {
+                    "type": "string",
+                    "example": "https://device.example.com/"
+                },
+                "created": {
+                    "type": "string",
+                    "example": "2023-12-01T10:30:00Z"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "A sample IoT device for demonstration"
+                },
+                "descriptions": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "events": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/wot.EventAffordance"
+                    }
+                },
+                "forms": {
+                    "type": "array",
+                    "items": {}
+                },
+                "id": {
+                    "type": "string",
+                    "example": "urn:device:001"
+                },
+                "links": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/wot.Link"
+                    }
+                },
+                "modified": {
+                    "type": "string",
+                    "example": "2023-12-01T10:30:00Z"
+                },
+                "profile": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "properties": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/wot.PropertyAffordance"
+                    }
+                },
+                "schemaDefinitions": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/wot.DataSchema"
+                    }
+                },
+                "security": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "[\"basic_sc\"]"
+                    ]
+                },
+                "securityDefinitions": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/wot.SecurityScheme"
+                    }
+                },
+                "support": {
+                    "type": "string",
+                    "example": "mailto:support@example.com"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "My IoT Device"
+                },
+                "titles": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "uris": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "version": {
+                    "$ref": "#/definitions/wot.VersionInfo"
+                }
+            }
+        },
+        "wot.VersionInfo": {
+            "type": "object",
+            "properties": {
+                "instance": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "description": "API key authentication for device access",
+            "type": "apiKey",
+            "name": "X-API-Key",
+            "in": "header"
+        },
+        "BearerAuth": {
+            "description": "JWT Bearer token authentication. Format: \"Bearer {token}\"",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

@@ -1,0 +1,2640 @@
+basePath: /api
+definitions:
+  discovery.ActionRequirement:
+    properties:
+      inputType:
+        type: string
+      metadata:
+        additionalProperties: {}
+        type: object
+      name:
+        type: string
+      outputType:
+        type: string
+    type: object
+  discovery.CapabilityQuery:
+    properties:
+      requiredActions:
+        items:
+          $ref: '#/definitions/discovery.ActionRequirement'
+        type: array
+      requiredEvents:
+        items:
+          $ref: '#/definitions/discovery.EventRequirement'
+        type: array
+      requiredProperties:
+        items:
+          $ref: '#/definitions/discovery.PropertyRequirement'
+        type: array
+      securitySchemes:
+        items:
+          type: string
+        type: array
+    type: object
+  discovery.EventRequirement:
+    properties:
+      dataType:
+        type: string
+      metadata:
+        additionalProperties: {}
+        type: object
+      name:
+        type: string
+    type: object
+  discovery.PropertyRequirement:
+    properties:
+      metadata:
+        additionalProperties: {}
+        type: object
+      name:
+        type: string
+      type:
+        type: string
+    type: object
+  discovery.SearchQuery:
+    properties:
+      '@type':
+        description: Semantic filters
+        items:
+          type: string
+        type: array
+      actions:
+        items:
+          type: string
+        type: array
+      events:
+        items:
+          type: string
+        type: array
+      limit:
+        description: Pagination
+        type: integer
+      manufacturer:
+        description: Metadata filters
+        type: string
+      model:
+        type: string
+      offset:
+        type: integer
+      orderBy:
+        description: Sorting
+        type: string
+      properties:
+        description: Property filters
+        items:
+          type: string
+        type: array
+      protocols:
+        description: Protocol filters
+        items:
+          type: string
+        type: array
+      text:
+        description: Text search
+        type: string
+    type: object
+  discovery.SearchResult:
+    properties:
+      highlights:
+        additionalProperties:
+          items:
+            type: string
+          type: array
+        type: object
+      metadata:
+        additionalProperties: {}
+        type: object
+      relevance:
+        type: number
+      thing:
+        $ref: '#/definitions/wot.ThingDescription'
+    type: object
+  discovery.ThingHierarchy:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/discovery.ThingHierarchy'
+        type: array
+      level:
+        type: integer
+      thing:
+        $ref: '#/definitions/wot.ThingDescription'
+    type: object
+  handlers.ActionInvocationRequest:
+    properties:
+      async:
+        type: boolean
+      input: {}
+    type: object
+  handlers.ActionInvocationResponse:
+    properties:
+      action_id:
+        type: string
+      async:
+        type: boolean
+      error:
+        type: string
+      output: {}
+      status:
+        type: string
+      timestamp:
+        type: string
+    type: object
+  handlers.ConfigDiffResponse:
+    properties:
+      diff:
+        description: JSON Patch operations array
+      from_version:
+        type: integer
+      success:
+        type: boolean
+      to_version:
+        type: integer
+    type: object
+  handlers.ConfigHistoryResponse:
+    properties:
+      data: {}
+      success:
+        type: boolean
+    type: object
+  handlers.ConfigResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  handlers.PropertyReadResponse:
+    properties:
+      cached:
+        type: boolean
+      timestamp:
+        type: string
+      value: {}
+    type: object
+  handlers.PropertyWriteRequest:
+    properties:
+      value: {}
+    type: object
+  handlers.PropertyWriteResponse:
+    properties:
+      timestamp:
+        type: string
+      updated:
+        type: boolean
+      value: {}
+    type: object
+  handlers.ThingDeleteResponse:
+    properties:
+      message:
+        type: string
+      thing_id:
+        type: string
+    type: object
+  handlers.ThingListResponse:
+    properties:
+      count:
+        type: integer
+      limit:
+        type: integer
+      offset:
+        type: integer
+      things:
+        items:
+          $ref: '#/definitions/wot.ThingDescription'
+        type: array
+      total:
+        type: integer
+    type: object
+  handlers.ThingRegistrationRequest:
+    properties:
+      options:
+        additionalProperties: {}
+        type: object
+      thing_description:
+        type: string
+    type: object
+  handlers.ThingRegistrationResponse:
+    properties:
+      registration_result: {}
+      thing_description:
+        $ref: '#/definitions/wot.ThingDescription'
+    type: object
+  handlers.ThingUpdateResponse:
+    properties:
+      thing_description:
+        $ref: '#/definitions/wot.ThingDescription'
+      update_result: {}
+    type: object
+  types.AuthProviderListResponse:
+    properties:
+      providers:
+        items:
+          $ref: '#/definitions/types.AuthProviderResponse'
+        type: array
+      total:
+        type: integer
+    type: object
+  types.AuthProviderResponse:
+    properties:
+      config:
+        additionalProperties: {}
+        type: object
+      created_at:
+        type: string
+      enabled:
+        type: boolean
+      id:
+        type: string
+      name:
+        type: string
+      priority:
+        type: integer
+      type:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  types.AuthProviderTestResult:
+    properties:
+      details:
+        additionalProperties: {}
+        type: object
+      errors:
+        items:
+          type: string
+        type: array
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  types.AuthStatusResponse:
+    properties:
+      authenticated:
+        example: true
+        type: boolean
+      expires_at:
+        example: "2023-12-01T11:30:00Z"
+        type: string
+      token_type:
+        example: Bearer
+        type: string
+      user:
+        $ref: '#/definitions/types.UserResponse'
+    type: object
+  types.ChangePasswordRequest:
+    properties:
+      current_password:
+        example: oldPassword123
+        type: string
+      new_password:
+        example: newPassword456
+        minLength: 8
+        type: string
+    required:
+    - current_password
+    - new_password
+    type: object
+  types.CreateAuthProviderRequest:
+    properties:
+      config:
+        additionalProperties: {}
+        type: object
+      enabled:
+        type: boolean
+      id:
+        type: string
+      name:
+        type: string
+      priority:
+        type: integer
+      type:
+        type: string
+    required:
+    - config
+    - id
+    - name
+    - type
+    type: object
+  types.CreateUserRequest:
+    properties:
+      disabled:
+        example: false
+        type: boolean
+      email:
+        example: john@example.com
+        type: string
+      name:
+        example: John Doe
+        type: string
+      password:
+        example: securePassword123
+        minLength: 8
+        type: string
+      roles:
+        example:
+        - '["viewer"'
+        - ' "operator"]'
+        items:
+          type: string
+        type: array
+      username:
+        example: john.doe
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  types.ErrorResponse:
+    properties:
+      code:
+        example: 400
+        type: integer
+      details:
+        example: 'Missing required field: title'
+        type: string
+      error:
+        example: Invalid Thing Description
+        type: string
+    type: object
+  types.ProcessorConfig:
+    description: Configuration for a data processor in the processing pipeline
+    properties:
+      config:
+        additionalProperties: {}
+        type: object
+      type:
+        example: json_validation
+        type: string
+    type: object
+  types.ProviderUser:
+    properties:
+      attributes:
+        additionalProperties: {}
+        type: object
+      email:
+        type: string
+      full_name:
+        type: string
+      groups:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      username:
+        type: string
+    type: object
+  types.ProviderUserListResponse:
+    properties:
+      total:
+        type: integer
+      users:
+        items:
+          $ref: '#/definitions/types.ProviderUser'
+        type: array
+    type: object
+  types.StreamCreationRequest:
+    description: Request body for creating a new data processing stream
+    properties:
+      direction:
+        example: input
+        type: string
+      input:
+        $ref: '#/definitions/types.StreamEndpointConfig'
+      interaction_name:
+        example: temperature
+        type: string
+      interaction_type:
+        example: properties
+        type: string
+      metadata:
+        additionalProperties: {}
+        type: object
+      output:
+        $ref: '#/definitions/types.StreamEndpointConfig'
+      processor_chain:
+        items:
+          $ref: '#/definitions/types.ProcessorConfig'
+        type: array
+      thing_id:
+        example: device-001
+        type: string
+    type: object
+  types.StreamEndpointConfig:
+    description: Configuration for stream input or output endpoint
+    properties:
+      config:
+        additionalProperties: {}
+        type: object
+      type:
+        example: kafka
+        type: string
+    type: object
+  types.StreamInfo:
+    description: Information about a created data processing stream
+    properties:
+      created_at:
+        example: "2023-12-01T10:30:00Z"
+        type: string
+      direction:
+        example: input
+        type: string
+      id:
+        example: stream-123
+        type: string
+      input:
+        $ref: '#/definitions/types.StreamEndpointConfig'
+      interaction_name:
+        example: temperature
+        type: string
+      interaction_type:
+        example: properties
+        type: string
+      metadata:
+        additionalProperties: {}
+        type: object
+      output:
+        $ref: '#/definitions/types.StreamEndpointConfig'
+      processor_chain:
+        items:
+          $ref: '#/definitions/types.ProcessorConfig'
+        type: array
+      status:
+        example: running
+        type: string
+      thing_id:
+        example: device-001
+        type: string
+      updated_at:
+        example: "2023-12-01T10:30:00Z"
+        type: string
+    type: object
+  types.UpdateAuthProviderRequest:
+    properties:
+      config:
+        additionalProperties: {}
+        type: object
+      enabled:
+        type: boolean
+      name:
+        type: string
+      priority:
+        type: integer
+    type: object
+  types.UpdateUserRequest:
+    properties:
+      disabled:
+        example: false
+        type: boolean
+      email:
+        example: john@example.com
+        type: string
+      name:
+        example: John Doe
+        type: string
+      roles:
+        example:
+        - '["admin"]'
+        items:
+          type: string
+        type: array
+    type: object
+  types.UserListResponse:
+    properties:
+      limit:
+        example: 10
+        type: integer
+      page:
+        example: 1
+        type: integer
+      total:
+        example: 42
+        type: integer
+      users:
+        items:
+          $ref: '#/definitions/types.UserResponse'
+        type: array
+    type: object
+  types.UserResponse:
+    properties:
+      created_at:
+        example: "2023-12-01T10:30:00Z"
+        type: string
+      disabled:
+        example: false
+        type: boolean
+      email:
+        example: john@example.com
+        type: string
+      id:
+        example: john.doe
+        type: string
+      last_login:
+        example: "2023-12-01T10:30:00Z"
+        type: string
+      metadata:
+        additionalProperties:
+          type: string
+        type: object
+      name:
+        example: John Doe
+        type: string
+      roles:
+        example:
+        - '["viewer"]'
+        items:
+          type: string
+        type: array
+      updated_at:
+        example: "2023-12-01T10:30:00Z"
+        type: string
+      username:
+        example: john.doe
+        type: string
+    type: object
+  wot.ActionAffordance:
+    properties:
+      $comment:
+        type: string
+      '@type':
+        description: Added for W3C WoT TD 1.1 semantic annotations
+        items:
+          type: string
+        type: array
+      description:
+        type: string
+      descriptions:
+        additionalProperties:
+          type: string
+        type: object
+      forms:
+        description: Must contain at least one form
+        items: {}
+        type: array
+      idempotent:
+        description: Default false
+        type: boolean
+      input:
+        $ref: '#/definitions/wot.DataSchema'
+      output:
+        $ref: '#/definitions/wot.DataSchema'
+      safe:
+        description: Default false
+        type: boolean
+      synchronous:
+        description: Added for W3C WoT TD 1.1
+        type: boolean
+      title:
+        type: string
+      titles:
+        additionalProperties:
+          type: string
+        type: object
+      uriVariables:
+        additionalProperties:
+          $ref: '#/definitions/wot.DataSchema'
+        type: object
+    type: object
+  wot.DataSchema:
+    properties:
+      $comment:
+        type: string
+      '@type':
+        description: Added for W3C WoT TD 1.1
+        items:
+          type: string
+        type: array
+      additionalProperties:
+        description: bool or *DataSchema
+      allOf:
+        items:
+          $ref: '#/definitions/wot.DataSchema'
+        type: array
+      anyOf:
+        items:
+          $ref: '#/definitions/wot.DataSchema'
+        type: array
+      const: {}
+      contentEncoding:
+        type: string
+      contentMediaType:
+        type: string
+      default: {}
+      description:
+        type: string
+      descriptions:
+        additionalProperties:
+          type: string
+        type: object
+      enum:
+        items: {}
+        type: array
+      exclusiveMaximum:
+        type: number
+      exclusiveMinimum:
+        type: number
+      format:
+        description: e.g., "date-time", "uri", "email"
+        type: string
+      items:
+        description: Array-specific
+      maxItems:
+        type: integer
+      maxLength:
+        type: integer
+      maximum:
+        type: number
+      minItems:
+        type: integer
+      minLength:
+        type: integer
+      minimum:
+        description: Number/Integer-specific
+        type: number
+      multipleOf:
+        type: number
+      not:
+        $ref: '#/definitions/wot.DataSchema'
+      observable:
+        description: Default false, relevant for PropertyAffordance
+        type: boolean
+      oneOf:
+        description: Logical keywords
+        items:
+          $ref: '#/definitions/wot.DataSchema'
+        type: array
+      pattern:
+        description: String-specific
+        type: string
+      properties:
+        additionalProperties:
+          $ref: '#/definitions/wot.DataSchema'
+        description: Object-specific
+        type: object
+      propertyNames:
+        $ref: '#/definitions/wot.DataSchema'
+      readOnly:
+        description: WoT specific (often found within PropertyAffordance, but part
+          of DataSchema concept)
+        type: boolean
+      required:
+        items:
+          type: string
+        type: array
+      title:
+        description: Common annotations specific to this DataSchema definition
+        type: string
+      titles:
+        additionalProperties:
+          type: string
+        type: object
+      type:
+        description: Type and format
+        type: string
+      uniqueItems:
+        type: boolean
+      unit:
+        type: string
+      writeOnly:
+        description: Default false
+        type: boolean
+    type: object
+  wot.EventAffordance:
+    properties:
+      $comment:
+        type: string
+      '@type':
+        description: Added for W3C WoT TD 1.1 semantic annotations
+        items:
+          type: string
+        type: array
+      cancellation:
+        $ref: '#/definitions/wot.DataSchema'
+      data:
+        $ref: '#/definitions/wot.DataSchema'
+      dataResponse:
+        allOf:
+        - $ref: '#/definitions/wot.DataSchema'
+        description: Added for W3C WoT TD 1.1
+      description:
+        type: string
+      descriptions:
+        additionalProperties:
+          type: string
+        type: object
+      forms:
+        description: Must contain at least one form
+        items: {}
+        type: array
+      subscription:
+        $ref: '#/definitions/wot.DataSchema'
+      title:
+        type: string
+      titles:
+        additionalProperties:
+          type: string
+        type: object
+      uriVariables:
+        additionalProperties:
+          $ref: '#/definitions/wot.DataSchema'
+        type: object
+    type: object
+  wot.Link:
+    properties:
+      anchor:
+        type: string
+      href:
+        type: string
+      hreflang:
+        description: Added for W3C WoT TD 1.1
+      rel:
+        type: string
+      sizes:
+        description: Added for W3C WoT TD 1.1
+        type: string
+      type:
+        description: Media type
+        type: string
+    type: object
+  wot.PropertyAffordance:
+    properties:
+      $comment:
+        type: string
+      '@type':
+        description: Added for W3C WoT TD 1.1 semantic annotations
+        items:
+          type: string
+        type: array
+      additionalProperties:
+        description: bool or *DataSchema
+      allOf:
+        items:
+          $ref: '#/definitions/wot.DataSchema'
+        type: array
+      anyOf:
+        items:
+          $ref: '#/definitions/wot.DataSchema'
+        type: array
+      const: {}
+      contentEncoding:
+        type: string
+      contentMediaType:
+        type: string
+      default: {}
+      description:
+        type: string
+      descriptions:
+        additionalProperties:
+          type: string
+        type: object
+      enum:
+        items: {}
+        type: array
+      exclusiveMaximum:
+        type: number
+      exclusiveMinimum:
+        type: number
+      format:
+        description: e.g., "date-time", "uri", "email"
+        type: string
+      forms:
+        description: Must contain at least one form
+        items: {}
+        type: array
+      items:
+        description: Array-specific
+      maxItems:
+        type: integer
+      maxLength:
+        type: integer
+      maximum:
+        type: number
+      minItems:
+        type: integer
+      minLength:
+        type: integer
+      minimum:
+        description: Number/Integer-specific
+        type: number
+      multipleOf:
+        type: number
+      not:
+        $ref: '#/definitions/wot.DataSchema'
+      observable:
+        description: Default false, relevant for PropertyAffordance
+        type: boolean
+      oneOf:
+        description: Logical keywords
+        items:
+          $ref: '#/definitions/wot.DataSchema'
+        type: array
+      pattern:
+        description: String-specific
+        type: string
+      properties:
+        additionalProperties:
+          $ref: '#/definitions/wot.DataSchema'
+        description: Object-specific
+        type: object
+      propertyNames:
+        $ref: '#/definitions/wot.DataSchema'
+      readOnly:
+        description: WoT specific (often found within PropertyAffordance, but part
+          of DataSchema concept)
+        type: boolean
+      required:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      titles:
+        additionalProperties:
+          type: string
+        type: object
+      type:
+        description: Type and format
+        type: string
+      uniqueItems:
+        type: boolean
+      unit:
+        type: string
+      uriVariables:
+        additionalProperties:
+          $ref: '#/definitions/wot.DataSchema'
+        type: object
+      writeOnly:
+        description: Default false
+        type: boolean
+    type: object
+  wot.SecurityScheme:
+    properties:
+      '@type':
+        description: e.g. "BasicSecurityScheme", "OAuth2SecurityScheme"
+      alg:
+        description: For Bearer
+        type: string
+      authorization:
+        description: For Bearer, OAuth2
+        type: string
+      description:
+        type: string
+      descriptions:
+        additionalProperties:
+          type: string
+        type: object
+      flow:
+        description: For OAuth2
+        type: string
+      format:
+        description: For Bearer
+        type: string
+      identity:
+        description: For PSK
+        type: string
+      in:
+        description: For apikey (location of security information), also used by some
+          other schemes
+        type: string
+      name:
+        description: For apikey (name of header/query param)
+        type: string
+      proxy:
+        description: URI
+        type: string
+      qop:
+        description: Fields for specific security schemes as per TD 1.1
+        type: string
+      refresh:
+        description: For OAuth2
+        type: string
+      scheme:
+        description: e.g. "basic", "bearer", "apikey", "oauth2" - this is the primary
+          discriminator
+        type: string
+      scopes:
+        description: For OAuth2
+        items:
+          type: string
+        type: array
+      token:
+        description: For OAuth2
+        type: string
+    type: object
+  wot.ThingDescription:
+    description: Complete W3C WoT Thing Description 1.1 specification compliant structure
+    properties:
+      $comment:
+        type: string
+      '@context':
+        example: https://www.w3.org/2022/wot/td/v1.1
+        type: string
+      '@type':
+        example:
+        - '["Thing"]'
+        items:
+          type: string
+        type: array
+      actions:
+        additionalProperties:
+          $ref: '#/definitions/wot.ActionAffordance'
+        type: object
+      base:
+        example: https://device.example.com/
+        type: string
+      created:
+        example: "2023-12-01T10:30:00Z"
+        type: string
+      description:
+        example: A sample IoT device for demonstration
+        type: string
+      descriptions:
+        additionalProperties:
+          type: string
+        type: object
+      events:
+        additionalProperties:
+          $ref: '#/definitions/wot.EventAffordance'
+        type: object
+      forms:
+        items: {}
+        type: array
+      id:
+        example: urn:device:001
+        type: string
+      links:
+        items:
+          $ref: '#/definitions/wot.Link'
+        type: array
+      modified:
+        example: "2023-12-01T10:30:00Z"
+        type: string
+      profile:
+        items:
+          type: string
+        type: array
+      properties:
+        additionalProperties:
+          $ref: '#/definitions/wot.PropertyAffordance'
+        type: object
+      schemaDefinitions:
+        additionalProperties:
+          $ref: '#/definitions/wot.DataSchema'
+        type: object
+      security:
+        example:
+        - '["basic_sc"]'
+        items:
+          type: string
+        type: array
+      securityDefinitions:
+        additionalProperties:
+          $ref: '#/definitions/wot.SecurityScheme'
+        type: object
+      support:
+        example: mailto:support@example.com
+        type: string
+      title:
+        example: My IoT Device
+        type: string
+      titles:
+        additionalProperties:
+          type: string
+        type: object
+      uris:
+        items:
+          type: string
+        type: array
+      version:
+        $ref: '#/definitions/wot.VersionInfo'
+    type: object
+  wot.VersionInfo:
+    properties:
+      instance:
+        type: string
+      model:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@twinfer.com
+    name: TwinCore API Support
+    url: http://www.twinfer.com/support
+  description: TwinCore Gateway is a Web of Things (WoT) gateway that manages IoT
+    devices through W3C Thing Descriptions. It dynamically generates data processing
+    pipelines using Benthos and exposes HTTP APIs for device interaction.
+  license:
+    name: Commercial License
+    url: http://www.twinfer.com/license
+  termsOfService: http://swagger.io/terms/
+  title: TwinCore Gateway API
+  version: "1.0"
+paths:
+  /admin/auth/providers:
+    get:
+      description: Retrieve all configured authentication providers
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.AuthProviderListResponse'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List all authentication providers
+      tags:
+      - Auth Providers
+    post:
+      consumes:
+      - application/json
+      description: Create a new authentication provider configuration
+      parameters:
+      - description: Provider configuration
+        in: body
+        name: provider
+        required: true
+        schema:
+          $ref: '#/definitions/types.CreateAuthProviderRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/types.AuthProviderResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "409":
+          description: Provider already exists
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create authentication provider
+      tags:
+      - Auth Providers
+  /admin/auth/providers/{id}:
+    delete:
+      description: Delete an authentication provider configuration
+      parameters:
+      - description: Provider ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Provider not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete authentication provider
+      tags:
+      - Auth Providers
+    get:
+      description: Retrieve a specific authentication provider by ID
+      parameters:
+      - description: Provider ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.AuthProviderResponse'
+        "404":
+          description: Provider not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get authentication provider
+      tags:
+      - Auth Providers
+    put:
+      consumes:
+      - application/json
+      description: Update an existing authentication provider configuration
+      parameters:
+      - description: Provider ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated provider configuration
+        in: body
+        name: provider
+        required: true
+        schema:
+          $ref: '#/definitions/types.UpdateAuthProviderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.AuthProviderResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "404":
+          description: Provider not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update authentication provider
+      tags:
+      - Auth Providers
+  /admin/auth/providers/{id}/test:
+    post:
+      description: Test connection and configuration for an authentication provider
+      parameters:
+      - description: Provider ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.AuthProviderTestResult'
+        "404":
+          description: Provider not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Test authentication provider
+      tags:
+      - Auth Providers
+  /admin/auth/providers/{id}/users:
+    get:
+      description: Retrieve users from an external authentication provider (if supported)
+      parameters:
+      - description: Provider ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Search query
+        in: query
+        name: search
+        type: string
+      - description: Maximum number of users to return
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.ProviderUserListResponse'
+        "404":
+          description: Provider not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "501":
+          description: Provider does not support user listing
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List users from authentication provider
+      tags:
+      - Auth Providers
+  /api/config:
+    get:
+      description: Retrieve the current merged configuration from all sources
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Current configuration
+          schema:
+            $ref: '#/definitions/handlers.ConfigResponse'
+        "500":
+          description: Failed to retrieve configuration
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get current configuration
+      tags:
+      - Configuration
+    put:
+      consumes:
+      - application/json
+      description: Update the application configuration with new values
+      parameters:
+      - description: Configuration updates
+        in: body
+        name: config
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Configuration updated successfully
+          schema:
+            $ref: '#/definitions/handlers.ConfigResponse'
+        "400":
+          description: Invalid configuration data
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Failed to update configuration
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update configuration
+      tags:
+      - Configuration
+  /api/config/caddy:
+    get:
+      description: Retrieve the current generated Caddy configuration
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Caddy configuration
+          schema:
+            $ref: '#/definitions/handlers.ConfigResponse'
+        "500":
+          description: Failed to retrieve Caddy configuration
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "501":
+          description: Caddy configuration access not supported
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Caddy configuration
+      tags:
+      - Configuration
+  /api/config/caddy/settings:
+    get:
+      description: Retrieve only the Caddy-specific configuration settings
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Caddy settings
+          schema:
+            $ref: '#/definitions/handlers.ConfigResponse'
+        "404":
+          description: Caddy settings not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Failed to retrieve Caddy settings
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Caddy settings
+      tags:
+      - Configuration
+    put:
+      consumes:
+      - application/json
+      description: Update only the Caddy-specific configuration settings
+      parameters:
+      - description: Caddy settings to update
+        in: body
+        name: settings
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Caddy settings updated successfully
+          schema:
+            $ref: '#/definitions/handlers.ConfigResponse'
+        "400":
+          description: Invalid settings data
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Failed to update Caddy settings
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update Caddy settings
+      tags:
+      - Configuration
+  /api/config/diff:
+    get:
+      description: Get the differences between two configuration versions
+      parameters:
+      - description: Source version number
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: Target version number (current if not specified)
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Configuration differences
+          schema:
+            $ref: '#/definitions/handlers.ConfigDiffResponse'
+        "400":
+          description: Invalid version parameters
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Failed to generate configuration diff
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "501":
+          description: Configuration diff not supported
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get configuration diff
+      tags:
+      - Configuration
+  /api/config/history:
+    get:
+      description: Retrieve the history of configuration changes with diffs
+      parameters:
+      - default: 10
+        description: Maximum number of history entries
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Configuration history
+          schema:
+            $ref: '#/definitions/handlers.ConfigHistoryResponse'
+        "500":
+          description: Failed to retrieve configuration history
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "501":
+          description: Configuration history not supported
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get configuration history
+      tags:
+      - Configuration
+  /api/config/patch:
+    post:
+      consumes:
+      - application/json
+      description: Apply a JSON diff patch to update configuration
+      parameters:
+      - description: JSON patch data
+        in: body
+        name: patch
+        required: true
+        schema: {}
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Patch applied successfully
+          schema:
+            $ref: '#/definitions/handlers.ConfigResponse'
+        "400":
+          description: Invalid patch data
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Failed to apply patch
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "501":
+          description: Configuration patches not supported
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Apply configuration patch
+      tags:
+      - Configuration
+  /api/config/reload:
+    post:
+      description: Reload configuration from persistent storage
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Configuration reloaded successfully
+          schema:
+            $ref: '#/definitions/handlers.ConfigResponse'
+        "500":
+          description: Failed to reload configuration
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "501":
+          description: Configuration reload not supported
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Reload configuration
+      tags:
+      - Configuration
+  /api/config/rollback/{version}:
+    post:
+      description: Rollback configuration to a previous version
+      parameters:
+      - description: Configuration version to rollback to
+        in: path
+        name: version
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Configuration rolled back successfully
+          schema:
+            $ref: '#/definitions/handlers.ConfigResponse'
+        "400":
+          description: Invalid version number
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Failed to rollback configuration
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "501":
+          description: Configuration rollback not supported
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Rollback configuration
+      tags:
+      - Configuration
+  /api/directory/discover/compatible/{thingId}:
+    get:
+      description: Find Things that can work together with the specified Thing
+      parameters:
+      - description: Thing ID
+        in: path
+        name: thingId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/wot.ThingDescription'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Discover compatible Things
+      tags:
+      - Directory
+  /api/directory/discover/hierarchy/{thingId}:
+    get:
+      description: Get hierarchical relationships starting from a root Thing
+      parameters:
+      - description: Root Thing ID
+        in: path
+        name: thingId
+        required: true
+        type: string
+      - default: 5
+        description: Maximum depth
+        in: query
+        name: maxDepth
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/discovery.ThingHierarchy'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Get Thing hierarchy
+      tags:
+      - Directory
+  /api/directory/discover/protocol/{protocol}:
+    get:
+      description: Find all Things that support a specific protocol
+      parameters:
+      - description: Protocol name (http, mqtt, coap, etc.)
+        in: path
+        name: protocol
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/wot.ThingDescription'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Discover Things by protocol
+      tags:
+      - Directory
+  /api/directory/relationships:
+    post:
+      consumes:
+      - application/json
+      description: Create a relationship between two Things
+      parameters:
+      - description: Relationship data
+        in: body
+        name: relationship
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Add Thing relationship
+      tags:
+      - Directory
+  /api/directory/relationships/{parentId}/{childId}:
+    delete:
+      description: Remove the relationship between two Things
+      parameters:
+      - description: Parent Thing ID
+        in: path
+        name: parentId
+        required: true
+        type: string
+      - description: Child Thing ID
+        in: path
+        name: childId
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Remove Thing relationship
+      tags:
+      - Directory
+  /api/directory/search:
+    post:
+      consumes:
+      - application/json
+      description: Search for Things using various filters and criteria
+      parameters:
+      - description: Search query
+        in: body
+        name: query
+        required: true
+        schema:
+          $ref: '#/definitions/discovery.SearchQuery'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/discovery.SearchResult'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Search for Things
+      tags:
+      - Directory
+  /api/directory/search/capabilities:
+    post:
+      consumes:
+      - application/json
+      description: Find Things matching specific capability requirements
+      parameters:
+      - description: Capability requirements
+        in: body
+        name: query
+        required: true
+        schema:
+          $ref: '#/definitions/discovery.CapabilityQuery'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/wot.ThingDescription'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Search Things by capabilities
+      tags:
+      - Directory
+  /api/directory/search/semantic:
+    get:
+      description: Find Things with specific semantic annotations
+      parameters:
+      - description: Semantic type (e.g., 'TemperatureSensor')
+        in: query
+        name: type
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/wot.ThingDescription'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Search Things by semantic type
+      tags:
+      - Directory
+  /api/directory/search/text:
+    get:
+      description: Full-text search across Thing Descriptions
+      parameters:
+      - description: Search text
+        in: query
+        name: q
+        required: true
+        type: string
+      - default: 20
+        description: Result limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/discovery.SearchResult'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Search Things by text
+      tags:
+      - Directory
+  /api/streams:
+    get:
+      description: Retrieve all Benthos streams with optional filtering
+      parameters:
+      - description: Filter by Thing ID
+        in: query
+        name: thing_id
+        type: string
+      - description: Filter by stream status (running, stopped, error)
+        in: query
+        name: status
+        type: string
+      - description: Filter by interaction type (property, action, event)
+        in: query
+        name: interaction_type
+        type: string
+      - default: 100
+        description: Maximum number of results (1-1000)
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Number of results to skip
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of streams
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List all streams
+      tags:
+      - Streams
+    post:
+      consumes:
+      - application/json
+      description: Create a new Benthos stream configuration
+      parameters:
+      - description: Stream creation request
+        in: body
+        name: stream
+        required: true
+        schema:
+          $ref: '#/definitions/types.StreamCreationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Stream created successfully
+          schema:
+            $ref: '#/definitions/types.StreamInfo'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new stream
+      tags:
+      - Streams
+  /api/streams/{id}:
+    get:
+      description: Retrieve a specific Benthos stream by ID
+      parameters:
+      - description: Stream ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Stream information
+          schema:
+            $ref: '#/definitions/types.StreamInfo'
+        "404":
+          description: Stream not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get stream by ID
+      tags:
+      - Streams
+  /api/streams/{id}/start:
+    post:
+      description: Start a stopped Benthos stream
+      parameters:
+      - description: Stream ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Stream started successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Stream not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Start a stream
+      tags:
+      - Streams
+  /api/streams/{id}/stop:
+    post:
+      description: Stop a running Benthos stream
+      parameters:
+      - description: Stream ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Stream stopped successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Stream not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Stop a stream
+      tags:
+      - Streams
+  /api/things:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all registered Thing Descriptions with optional filtering
+        and pagination
+      parameters:
+      - default: 100
+        description: Maximum number of results (1-1000)
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Number of results to skip
+        in: query
+        name: offset
+        type: integer
+      - description: Filter by Thing ID, title, or description
+        in: query
+        name: filter
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of Thing Descriptions
+          schema:
+            $ref: '#/definitions/handlers.ThingListResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List all Thing Descriptions
+      tags:
+      - Things
+    post:
+      consumes:
+      - application/json
+      description: Register a new Thing Description and create associated streams
+        and bindings
+      parameters:
+      - description: Thing registration request
+        in: body
+        name: thing
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.ThingRegistrationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Thing registered successfully
+          schema:
+            $ref: '#/definitions/handlers.ThingRegistrationResponse'
+        "400":
+          description: Invalid request body or Thing Description
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Register a new Thing Description
+      tags:
+      - Things
+  /api/things/{id}:
+    delete:
+      description: Remove a Thing Description and clean up associated streams and
+        bindings
+      parameters:
+      - description: Thing ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Thing deleted successfully
+          schema:
+            $ref: '#/definitions/handlers.ThingDeleteResponse'
+        "404":
+          description: Thing not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a Thing Description
+      tags:
+      - Things
+    get:
+      description: Retrieve a specific Thing Description by ID
+      parameters:
+      - description: Thing ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: false
+        description: Include stream information in response
+        in: query
+        name: include_streams
+        type: boolean
+      - default: false
+        description: Return original Thing Description without gateway transformation
+        in: query
+        name: original
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Thing Description
+          schema:
+            $ref: '#/definitions/wot.ThingDescription'
+        "404":
+          description: Thing not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a Thing Description
+      tags:
+      - Things
+    put:
+      consumes:
+      - application/json
+      description: Update an existing Thing Description and regenerate streams and
+        bindings
+      parameters:
+      - description: Thing ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Thing update request
+        in: body
+        name: thing
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.ThingRegistrationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Thing updated successfully
+          schema:
+            $ref: '#/definitions/handlers.ThingUpdateResponse'
+        "400":
+          description: Invalid request body or Thing Description
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "404":
+          description: Thing not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a Thing Description
+      tags:
+      - Things
+  /api/things/{id}/actions/{name}:
+    post:
+      consumes:
+      - application/json
+      description: Execute an action on a Thing, supporting both synchronous and asynchronous
+        execution
+      parameters:
+      - description: Thing ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Action name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Action invocation request
+        in: body
+        name: action
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.ActionInvocationRequest'
+      - default: 30
+        description: Timeout in seconds (1-300)
+        in: query
+        name: timeout
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Action executed successfully (synchronous)
+          schema:
+            $ref: '#/definitions/handlers.ActionInvocationResponse'
+        "202":
+          description: Action execution started (asynchronous)
+          schema:
+            $ref: '#/definitions/handlers.ActionInvocationResponse'
+        "400":
+          description: Invalid request body or action input
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "404":
+          description: Action not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "408":
+          description: Action execution timeout
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Invoke action
+      tags:
+      - Actions
+  /api/things/{id}/actions/{name}/status/{actionId}:
+    get:
+      description: Get the current status and result of an asynchronous action execution
+      parameters:
+      - description: Thing ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Action name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Action execution ID
+        in: path
+        name: actionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Action status retrieved
+          schema:
+            $ref: '#/definitions/handlers.ActionInvocationResponse'
+        "404":
+          description: Action execution not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get action status
+      tags:
+      - Actions
+  /api/things/{id}/events/{name}:
+    get:
+      consumes:
+      - text/event-stream
+      description: Subscribe to real-time events from a Thing via Server-Sent Events
+      parameters:
+      - description: Thing ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Event name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Event filter criteria
+        in: query
+        name: filter
+        type: string
+      - default: 1
+        description: Number of events to batch (1-100)
+        in: query
+        name: batch_size
+        type: integer
+      - default: 0
+        description: Subscription timeout in seconds (1-3600)
+        in: query
+        name: timeout
+        type: integer
+      - description: Last event ID for resuming subscription
+        in: query
+        name: last_event_id
+        type: string
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: Server-Sent Events stream
+          schema:
+            type: string
+        "400":
+          description: Invalid parameters
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "403":
+          description: Event not subscribable
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "404":
+          description: Event not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Subscribe to events
+      tags:
+      - Events
+  /api/things/{id}/properties/{name}:
+    get:
+      consumes:
+      - text/event-stream
+      description: Subscribe to real-time property value changes via Server-Sent Events
+      parameters:
+      - description: Thing ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Property name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: Server-Sent Events stream
+          schema:
+            type: string
+        "403":
+          description: Property not observable
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "404":
+          description: Property not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Observe property changes
+      tags:
+      - Properties
+    put:
+      consumes:
+      - application/json
+      description: Update the value of a specific property on a Thing
+      parameters:
+      - description: Thing ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Property name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Property value to set
+        in: body
+        name: property
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PropertyWriteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Property updated successfully
+          schema:
+            $ref: '#/definitions/handlers.PropertyWriteResponse'
+        "400":
+          description: Invalid request body or property value
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "403":
+          description: Property not writable
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "404":
+          description: Property not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Write property value
+      tags:
+      - Properties
+  /auth/profile:
+    get:
+      description: Get current authenticated user's profile information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.UserResponse'
+        "401":
+          description: Not authenticated
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user profile
+      tags:
+      - Auth
+  /auth/status:
+    get:
+      description: Get current authentication status and user information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.AuthStatusResponse'
+        "401":
+          description: Not authenticated
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get authentication status
+      tags:
+      - Auth
+  /users:
+    get:
+      description: Retrieve all registered user accounts (admin only)
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Items per page (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.UserListResponse'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List all users
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account with specified roles (admin only)
+      parameters:
+      - description: User details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/types.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/types.UserResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "409":
+          description: User already exists
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create new user
+      tags:
+      - Users
+  /users/{id}:
+    delete:
+      description: Delete a user account (admin only)
+      parameters:
+      - description: Username
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete user
+      tags:
+      - Users
+    get:
+      description: Retrieve a specific user account by username
+      parameters:
+      - description: Username
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.UserResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user by ID
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Update user account details and roles (admin only)
+      parameters:
+      - description: Username
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated user details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/types.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.UserResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user
+      tags:
+      - Users
+  /users/{id}/password:
+    put:
+      consumes:
+      - application/json
+      description: Change a user's password
+      parameters:
+      - description: Username
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Password change request
+        in: body
+        name: password
+        required: true
+        schema:
+          $ref: '#/definitions/types.ChangePasswordRequest'
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "401":
+          description: Current password incorrect
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Change user password
+      tags:
+      - Users
+securityDefinitions:
+  ApiKeyAuth:
+    description: API key authentication for device access
+    in: header
+    name: X-API-Key
+    type: apiKey
+  BearerAuth:
+    description: 'JWT Bearer token authentication. Format: "Bearer {token}"'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
