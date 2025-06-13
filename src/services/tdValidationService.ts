@@ -44,41 +44,69 @@ export class TDValidationService {
    * Validate a Thing Description using browser-compatible validation
    */
   async validateTD(td: string | object): Promise<ValidationResult> {
+    // Input validation
+    if (!td) {
+      return this.createErrorResult('Thing Description cannot be empty')
+    }
+
     try {
       let tdString: string
+      let parsedTD: any
       
       // Parse JSON if string provided
       if (typeof td === 'string') {
-        tdString = td
+        tdString = td.trim()
+        if (!tdString) {
+          return this.createErrorResult('Thing Description cannot be empty')
+        }
+        
         try {
-          JSON.parse(td) // Validate JSON syntax
+          parsedTD = JSON.parse(tdString)
         } catch (parseError) {
-          return this.createParseErrorResult(parseError as Error, td)
+          return this.createParseErrorResult(parseError as Error, tdString)
         }
       } else {
-        tdString = JSON.stringify(td, null, 2)
+        try {
+          tdString = JSON.stringify(td, null, 2)
+          parsedTD = td
+        } catch (stringifyError) {
+          return this.createErrorResult('Failed to serialize Thing Description to JSON')
+        }
+      }
+
+      // Basic structure validation
+      if (typeof parsedTD !== 'object' || parsedTD === null) {
+        return this.createErrorResult('Thing Description must be a JSON object')
       }
 
       // Use browser-compatible fallback validation
       return this.validateWithFallback(tdString)
 
     } catch (error) {
-      return {
-        isValid: false,
-        errors: [{
-          message: `Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          severity: 'critical'
-        }],
-        warnings: [],
-        details: {
-          contextValid: false,
-          requiredFieldsPresent: false,
-          schemaValid: false,
-          assertionsValid: false,
-          securityValid: false,
-          linksValid: false,
-          formsValid: false
-        }
+      console.error('TD validation error:', error)
+      return this.createErrorResult(`Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  /**
+   * Create a standardized error result
+   */
+  private createErrorResult(message: string): ValidationResult {
+    return {
+      isValid: false,
+      errors: [{
+        message,
+        severity: 'critical'
+      }],
+      warnings: [],
+      details: {
+        contextValid: false,
+        requiredFieldsPresent: false,
+        schemaValid: false,
+        assertionsValid: false,
+        securityValid: false,
+        linksValid: false,
+        formsValid: false
       }
     }
   }

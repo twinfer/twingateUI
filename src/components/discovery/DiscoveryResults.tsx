@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useThingsStore } from '@/stores/thingsStore'
 import { useImportThing, useImportMultipleThings } from '@/hooks/useDiscovery'
+import { thingToDiscoveredThing } from '@/lib/thingTransforms'
 import { 
   CheckCircle, 
   AlertCircle, 
@@ -46,7 +47,10 @@ export function DiscoveryResults() {
   }
 
   const handleImportSelected = () => {
-    const thingsToImport = discoveredThings.filter(t => selectedThings.has(t.id))
+    const thingsToImport = discoveredThings
+      .filter(t => selectedThings.has(t.id))
+      .map(thing => thingToDiscoveredThing(thing))
+      .filter((discoveredThing): discoveredThing is DiscoveredThing => discoveredThing !== null)
     importMultiple.mutate(thingsToImport)
   }
 
@@ -60,7 +64,7 @@ export function DiscoveryResults() {
     })
   }
 
-  const getValidationIcon = (status: DiscoveredThing['validationStatus']) => {
+  const getValidationIcon = (status?: 'valid' | 'invalid' | 'warning' | 'pending') => {
     switch (status) {
       case 'valid':
         return <CheckCircle className="h-4 w-4 text-green-500" />
@@ -69,11 +73,12 @@ export function DiscoveryResults() {
       case 'warning':
         return <AlertCircle className="h-4 w-4 text-yellow-500" />
       case 'pending':
+      default:
         return <Clock className="h-4 w-4 text-gray-500" />
     }
   }
 
-  const getValidationBadge = (status: DiscoveredThing['validationStatus']) => {
+  const getValidationBadge = (status?: 'valid' | 'invalid' | 'warning' | 'pending') => {
     switch (status) {
       case 'valid':
         return <Badge variant="default" className="bg-green-100 text-green-800">Valid</Badge>
@@ -82,11 +87,14 @@ export function DiscoveryResults() {
       case 'warning':
         return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Warning</Badge>
       case 'pending':
+      default:
         return <Badge variant="outline">Pending</Badge>
     }
   }
 
-  const getDiscoveryMethodBadge = (method: DiscoveredThing['discoveryMethod']) => {
+  const getDiscoveryMethodBadge = (method?: 'well-known' | 'direct-url' | 'scan') => {
+    if (!method) return <Badge variant="outline">Manual</Badge>
+    
     const badges = {
       'well-known': <Badge variant="outline"><Globe className="h-3 w-3 mr-1" />.well-known</Badge>,
       'direct-url': <Badge variant="secondary">Direct URL</Badge>,
@@ -181,9 +189,11 @@ export function DiscoveryResults() {
                                 {getValidationIcon(thing.validationStatus)}
                                 {getValidationBadge(thing.validationStatus)}
                                 {getDiscoveryMethodBadge(thing.discoveryMethod)}
-                                <Badge variant="outline" className="text-xs">
-                                  {thing.url}
-                                </Badge>
+                                {thing.url && (
+                                  <Badge variant="outline" className="text-xs">
+                                    {thing.url}
+                                  </Badge>
+                                )}
                               </div>
                               
                               {thing.validationErrors && thing.validationErrors.length > 0 && (
@@ -205,14 +215,20 @@ export function DiscoveryResults() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => setPreviewThing(thing)}
+                                onClick={() => {
+                                  const discoveredThing = thingToDiscoveredThing(thing)
+                                  if (discoveredThing) setPreviewThing(discoveredThing)
+                                }}
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => importSingle.mutate(thing)}
+                                onClick={() => {
+                                  const discoveredThing = thingToDiscoveredThing(thing)
+                                  if (discoveredThing) importSingle.mutate(discoveredThing)
+                                }}
                                 disabled={importSingle.isPending}
                               >
                                 <Download className="h-4 w-4" />

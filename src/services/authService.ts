@@ -25,10 +25,22 @@ class AuthService {
   }
 
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
+    // Clear any existing auth state first
+    useAuthStore.getState().setError(null)
+    useAuthStore.getState().setLoading(true)
+    
     try {
+      // Validate input
+      if (!credentials.email?.trim() || !credentials.password?.trim()) {
+        throw new Error('Email and password are required')
+      }
+      
       // Since this API uses bearer token auth with external providers,
       // we'll simulate login for demo purposes
       if (credentials.email === 'admin@example.com' && credentials.password === 'password') {
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
         // Mock successful login with a demo token
         const mockToken = 'demo-bearer-token-12345'
         const mockUser: User = {
@@ -57,8 +69,16 @@ class AuthService {
         throw new Error('Invalid credentials')
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Login failed'
       console.error('Login failed:', error)
-      throw new Error('Invalid email or password')
+      
+      // Update auth store with error
+      useAuthStore.getState().setError(errorMessage)
+      
+      // Re-throw with user-friendly message
+      throw new Error(errorMessage === 'Invalid credentials' ? 'Invalid email or password' : errorMessage)
+    } finally {
+      useAuthStore.getState().setLoading(false)
     }
   }
 
@@ -82,11 +102,17 @@ class AuthService {
     const { refreshToken } = useAuthStore.getState()
     
     if (!refreshToken) {
+      // Clear auth state if no refresh token
+      await this.logout()
       throw new Error('No refresh token available')
     }
 
+    useAuthStore.getState().setLoading(true)
+    
     try {
-      // Mock token refresh for demo
+      // Mock token refresh for demo with simulated delay
+      await new Promise(resolve => setTimeout(resolve, 300))
+      
       const newToken = 'demo-bearer-token-refreshed-' + Date.now()
       const newRefreshToken = 'demo-refresh-token-refreshed-' + Date.now()
       
@@ -94,14 +120,19 @@ class AuthService {
       const currentUser = useAuthStore.getState().user
       if (currentUser) {
         useAuthStore.getState().setAuth(currentUser, newToken, newRefreshToken)
+        return newToken
+      } else {
+        throw new Error('No current user found')
       }
-      
-      return newToken
     } catch (error) {
       console.error('Token refresh failed:', error)
+      
       // If refresh fails, clear auth state
-      this.logout()
+      await this.logout()
+      
       throw new Error('Session expired. Please login again.')
+    } finally {
+      useAuthStore.getState().setLoading(false)
     }
   }
 

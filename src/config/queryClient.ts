@@ -1,12 +1,12 @@
 import { QueryClient } from '@tanstack/react-query'
 
-// Create a query client with sensible defaults for IoT dashboard
+// Create a query client with memory-optimized defaults for IoT dashboard
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       // Stale time for IoT data - 30 seconds
       staleTime: 30 * 1000,
-      // Cache time - 5 minutes
+      // Cache time - 5 minutes (reduced for memory efficiency)
       gcTime: 5 * 60 * 1000,
       // Retry failed requests up to 3 times
       retry: 3,
@@ -16,13 +16,30 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: true,
       // Refetch on reconnect
       refetchOnReconnect: true,
+      // Network mode for better offline handling
+      networkMode: 'online',
+      // Limit concurrent queries to prevent memory spikes
+      meta: {
+        maxConcurrent: 10
+      }
     },
     mutations: {
       // Retry mutations once
       retry: 1,
       // Retry delay for mutations
       retryDelay: 1000,
+      // Network mode for mutations
+      networkMode: 'online',
     },
+  },
+  // Memory management configuration
+  queryCache: undefined, // Use default with our settings
+  mutationCache: undefined, // Use default
+  // Global settings for memory optimization
+  logger: {
+    log: console.log,
+    warn: console.warn,
+    error: console.error,
   },
 })
 

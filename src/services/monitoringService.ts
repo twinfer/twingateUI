@@ -68,8 +68,9 @@ export interface Alert {
 }
 
 class MonitoringService {
-  private eventSource?: EventSource
-  private websocket?: WebSocket
+  // Connection pools for better resource management
+  private eventSources = new Map<string, EventSource>()
+  private websockets = new Map<string, WebSocket>()
   private subscriptions = new Map<string, MonitoringSubscription>()
   private propertyListeners = new Map<string, Set<(value: PropertyValue) => void>>()
   private eventListeners = new Map<string, Set<(event: WoTEvent) => void>>()
@@ -78,6 +79,27 @@ class MonitoringService {
   // Mock data generators for development
   private mockIntervals = new Map<string, NodeJS.Timeout>()
   private mockEventGenerators = new Map<string, NodeJS.Timeout>()
+  
+  // Connection recovery and lifecycle management
+  private reconnectAttempts = new Map<string, number>()
+  private readonly maxReconnectAttempts = 5
+  private readonly baseReconnectDelay = 1000 // 1 second
+  private readonly connectionTimeout = 10000 // 10 seconds
+  private readonly maxIdleTime = 5 * 60 * 1000 // 5 minutes
+  
+  // Connection lifecycle tracking
+  private connectionLastActivity = new Map<string, number>()
+  private cleanupInterval?: NodeJS.Timeout
+  private memoryCleanupInterval?: NodeJS.Timeout
+  
+  // Memory management
+  private readonly maxListenersPerEvent = 10
+  private readonly maxCachedConnections = 20
+
+  constructor() {
+    // Initialize memory management cleanup intervals
+    this.startMemoryManagement()
+  }
 
   /**
    * Start monitoring a Thing's properties and/or events
@@ -124,6 +146,9 @@ class MonitoringService {
       clearInterval(mockEventGen)
       this.mockEventGenerators.delete(subscriptionId)
     }
+
+    // Clean up real connections if no more subscriptions use them
+    await this.cleanupUnusedConnections(subscription.thingId)
   }
 
   /**
@@ -134,10 +159,24 @@ class MonitoringService {
     if (!this.propertyListeners.has(key)) {
       this.propertyListeners.set(key, new Set())
     }
-    this.propertyListeners.get(key)!.add(callback)
+    
+    const listeners = this.propertyListeners.get(key)!
+    
+    // Prevent memory leaks by limiting listener count
+    if (listeners.size >= this.maxListenersPerEvent) {
+      console.warn(`Max listeners (${this.maxListenersPerEvent}) reached for property ${key}`)
+      return () => {} // Return no-op cleanup function
+    }
+    
+    listeners.add(callback)
+    this.updateConnectionActivity(key)
     
     return () => {
       this.propertyListeners.get(key)?.delete(callback)
+      // Clean up empty listener sets
+      if (listeners.size === 0) {
+        this.propertyListeners.delete(key)
+      }
     }
   }
 
@@ -149,10 +188,24 @@ class MonitoringService {
     if (!this.eventListeners.has(key)) {
       this.eventListeners.set(key, new Set())
     }
-    this.eventListeners.get(key)!.add(callback)
+    
+    const listeners = this.eventListeners.get(key)!
+    
+    // Prevent memory leaks by limiting listener count
+    if (listeners.size >= this.maxListenersPerEvent) {
+      console.warn(`Max listeners (${this.maxListenersPerEvent}) reached for event ${key}`)
+      return () => {} // Return no-op cleanup function
+    }
+    
+    listeners.add(callback)
+    this.updateConnectionActivity(key)
     
     return () => {
       this.eventListeners.get(key)?.delete(callback)
+      // Clean up empty listener sets
+      if (listeners.size === 0) {
+        this.eventListeners.delete(key)
+      }
     }
   }
 
@@ -260,8 +313,186 @@ class MonitoringService {
    * Establish real SSE/WebSocket connection (production)
    */
   private async establishConnection(subscription: MonitoringSubscription): Promise<void> {
-    // TODO: Implement real SSE/WebSocket connections to TwinCore Gateway
-    console.log('TODO: Establish real connection for subscription:', subscription)
+    const connectionKey = `${subscription.thingId}:${subscription.type}`
+    
+    try {
+      if (subscription.type === 'property' || subscription.type === 'all') {
+        await this.establishSSEConnection(subscription)
+      }
+      
+      if (subscription.type === 'event' || subscription.type === 'all') {
+        await this.establishWebSocketConnection(subscription)
+      }
+      
+      // Reset reconnect attempts on successful connection
+      this.reconnectAttempts.delete(connectionKey)
+      
+    } catch (error) {
+      console.error('Failed to establish connection:', error)
+      await this.handleConnectionError(subscription, error)
+    }
+  }
+
+  /**
+   * Establish SSE connection for property monitoring
+   */
+  private async establishSSEConnection(subscription: MonitoringSubscription): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        const connectionKey = `sse_${subscription.thingId}`
+        const sseUrl = `${env.SSE_URL}/things/${subscription.thingId}/properties`
+        
+        // Reuse existing connection if available
+        if (this.eventSources.has(connectionKey)) {
+          const existingSource = this.eventSources.get(connectionKey)!
+          if (existingSource.readyState === EventSource.OPEN) {
+            this.updateConnectionActivity(connectionKey)
+            resolve()
+            return
+          } else {
+            // Clean up failed connection
+            existingSource.close()
+            this.eventSources.delete(connectionKey)
+          }
+        }
+        
+        const eventSource = new EventSource(sseUrl)
+        this.eventSources.set(connectionKey, eventSource)
+        
+        // Set connection timeout
+        const timeoutId = setTimeout(() => {
+          eventSource.close()
+          this.eventSources.delete(connectionKey)
+          reject(new Error('SSE connection timeout'))
+        }, this.connectionTimeout)
+        
+        eventSource.onopen = () => {
+          clearTimeout(timeoutId)
+          this.updateConnectionActivity(connectionKey)
+          console.log(`SSE connection established for ${subscription.thingId}`)
+          resolve()
+        }
+        
+        eventSource.onerror = (error) => {
+          clearTimeout(timeoutId)
+          console.error('SSE connection error:', error)
+          this.eventSources.delete(connectionKey)
+          reject(new Error('SSE connection failed'))
+        }
+        
+        eventSource.onmessage = (event) => {
+          try {
+            this.updateConnectionActivity(connectionKey)
+            const propertyValue: PropertyValue = JSON.parse(event.data)
+            this.notifyPropertyListeners(propertyValue)
+          } catch (parseError) {
+            console.error('Failed to parse SSE message:', parseError)
+          }
+        }
+        
+      } catch (error) {
+        reject(error)
+      }
+    })
+  }
+
+  /**
+   * Establish WebSocket connection for event monitoring
+   */
+  private async establishWebSocketConnection(subscription: MonitoringSubscription): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        const connectionKey = `ws_${subscription.thingId}`
+        const wsUrl = `${env.WS_URL}/things/${subscription.thingId}/events`
+        
+        // Reuse existing connection if available
+        if (this.websockets.has(connectionKey)) {
+          const existingSocket = this.websockets.get(connectionKey)!
+          if (existingSocket.readyState === WebSocket.OPEN) {
+            this.updateConnectionActivity(connectionKey)
+            resolve()
+            return
+          } else {
+            // Clean up failed connection
+            existingSocket.close()
+            this.websockets.delete(connectionKey)
+          }
+        }
+        
+        const websocket = new WebSocket(wsUrl)
+        this.websockets.set(connectionKey, websocket)
+        
+        // Set connection timeout
+        const timeoutId = setTimeout(() => {
+          websocket.close()
+          this.websockets.delete(connectionKey)
+          reject(new Error('WebSocket connection timeout'))
+        }, this.connectionTimeout)
+        
+        websocket.onopen = () => {
+          clearTimeout(timeoutId)
+          this.updateConnectionActivity(connectionKey)
+          console.log(`WebSocket connection established for ${subscription.thingId}`)
+          resolve()
+        }
+        
+        websocket.onerror = (error) => {
+          clearTimeout(timeoutId)
+          console.error('WebSocket connection error:', error)
+          this.websockets.delete(connectionKey)
+          reject(new Error('WebSocket connection failed'))
+        }
+        
+        websocket.onmessage = (event) => {
+          try {
+            this.updateConnectionActivity(connectionKey)
+            const wotEvent: WoTEvent = JSON.parse(event.data)
+            this.notifyEventListeners(wotEvent)
+          } catch (parseError) {
+            console.error('Failed to parse WebSocket message:', parseError)
+          }
+        }
+        
+        websocket.onclose = (event) => {
+          this.websockets.delete(connectionKey)
+          if (!event.wasClean) {
+            console.warn('WebSocket connection closed unexpectedly')
+            this.handleConnectionError(subscription, new Error('WebSocket closed unexpectedly'))
+          }
+        }
+        
+      } catch (error) {
+        reject(error)
+      }
+    })
+  }
+
+  /**
+   * Handle connection errors with retry logic
+   */
+  private async handleConnectionError(subscription: MonitoringSubscription, error: any): Promise<void> {
+    const connectionKey = `${subscription.thingId}:${subscription.type}`
+    const attempts = this.reconnectAttempts.get(connectionKey) || 0
+    
+    if (attempts >= this.maxReconnectAttempts) {
+      console.error(`Max reconnection attempts reached for ${connectionKey}`)
+      // Fall back to mock data generation
+      this.startMockDataGeneration(subscription)
+      return
+    }
+    
+    this.reconnectAttempts.set(connectionKey, attempts + 1)
+    
+    const delay = this.baseReconnectDelay * Math.pow(2, attempts)
+    console.log(`Attempting to reconnect ${connectionKey} in ${delay}ms (attempt ${attempts + 1}/${this.maxReconnectAttempts})`)
+    
+    setTimeout(async () => {
+      try {
+        await this.establishConnection(subscription)
+      } catch (retryError) {
+        console.error('Reconnection failed:', retryError)
+      }
+    }, delay)
   }
 
   /**
@@ -369,9 +600,189 @@ class MonitoringService {
   }
 
   /**
+   * Start memory management cleanup intervals
+   */
+  private startMemoryManagement(): void {
+    // Clean up idle connections every minute
+    this.cleanupInterval = setInterval(() => {
+      this.cleanupIdleConnections()
+    }, 60000)
+    
+    // Full memory cleanup every 5 minutes
+    this.memoryCleanupInterval = setInterval(() => {
+      this.performMemoryCleanup()
+    }, 5 * 60000)
+  }
+
+  /**
+   * Update connection activity timestamp
+   */
+  private updateConnectionActivity(connectionKey: string): void {
+    this.connectionLastActivity.set(connectionKey, Date.now())
+  }
+
+  /**
+   * Clean up unused connections for a Thing
+   */
+  private async cleanupUnusedConnections(thingId: string): Promise<void> {
+    // Check if any active subscriptions still need this Thing's connections
+    const hasActiveSubscriptions = Array.from(this.subscriptions.values()).some(
+      sub => sub.thingId === thingId && sub.active
+    )
+    
+    if (!hasActiveSubscriptions) {
+      // Close SSE connection
+      const sseKey = `sse_${thingId}`
+      const eventSource = this.eventSources.get(sseKey)
+      if (eventSource) {
+        eventSource.close()
+        this.eventSources.delete(sseKey)
+        this.connectionLastActivity.delete(sseKey)
+        console.log(`Closed unused SSE connection for ${thingId}`)
+      }
+      
+      // Close WebSocket connection
+      const wsKey = `ws_${thingId}`
+      const websocket = this.websockets.get(wsKey)
+      if (websocket) {
+        websocket.close()
+        this.websockets.delete(wsKey)
+        this.connectionLastActivity.delete(wsKey)
+        console.log(`Closed unused WebSocket connection for ${thingId}`)
+      }
+    }
+  }
+
+  /**
+   * Clean up idle connections
+   */
+  private cleanupIdleConnections(): void {
+    const now = Date.now()
+    
+    // Clean up idle EventSource connections
+    for (const [key, eventSource] of this.eventSources.entries()) {
+      const lastActivity = this.connectionLastActivity.get(key) || 0
+      if (now - lastActivity > this.maxIdleTime) {
+        console.log(`Closing idle SSE connection: ${key}`)
+        eventSource.close()
+        this.eventSources.delete(key)
+        this.connectionLastActivity.delete(key)
+      }
+    }
+    
+    // Clean up idle WebSocket connections
+    for (const [key, websocket] of this.websockets.entries()) {
+      const lastActivity = this.connectionLastActivity.get(key) || 0
+      if (now - lastActivity > this.maxIdleTime) {
+        console.log(`Closing idle WebSocket connection: ${key}`)
+        websocket.close()
+        this.websockets.delete(key)
+        this.connectionLastActivity.delete(key)
+      }
+    }
+  }
+
+  /**
+   * Perform comprehensive memory cleanup
+   */
+  private performMemoryCleanup(): void {
+    // Clean up empty listener sets
+    for (const [key, listeners] of this.propertyListeners.entries()) {
+      if (listeners.size === 0) {
+        this.propertyListeners.delete(key)
+      }
+    }
+    
+    for (const [key, listeners] of this.eventListeners.entries()) {
+      if (listeners.size === 0) {
+        this.eventListeners.delete(key)
+      }
+    }
+    
+    // Enforce maximum cached connections
+    if (this.eventSources.size > this.maxCachedConnections) {
+      console.warn(`Too many EventSource connections (${this.eventSources.size}), cleaning up oldest`)
+      const sortedConnections = Array.from(this.connectionLastActivity.entries())
+        .filter(([key]) => key.startsWith('sse_'))
+        .sort((a, b) => a[1] - b[1])
+      
+      // Close oldest connections
+      const toClose = sortedConnections.slice(0, this.eventSources.size - this.maxCachedConnections)
+      for (const [key] of toClose) {
+        const eventSource = this.eventSources.get(key)
+        if (eventSource) {
+          eventSource.close()
+          this.eventSources.delete(key)
+          this.connectionLastActivity.delete(key)
+        }
+      }
+    }
+    
+    if (this.websockets.size > this.maxCachedConnections) {
+      console.warn(`Too many WebSocket connections (${this.websockets.size}), cleaning up oldest`)
+      const sortedConnections = Array.from(this.connectionLastActivity.entries())
+        .filter(([key]) => key.startsWith('ws_'))
+        .sort((a, b) => a[1] - b[1])
+      
+      // Close oldest connections
+      const toClose = sortedConnections.slice(0, this.websockets.size - this.maxCachedConnections)
+      for (const [key] of toClose) {
+        const websocket = this.websockets.get(key)
+        if (websocket) {
+          websocket.close()
+          this.websockets.delete(key)
+          this.connectionLastActivity.delete(key)
+        }
+      }
+    }
+    
+    // Log memory statistics
+    console.debug('Memory cleanup completed:', {
+      eventSources: this.eventSources.size,
+      websockets: this.websockets.size,
+      propertyListeners: this.propertyListeners.size,
+      eventListeners: this.eventListeners.size,
+      alertListeners: this.alertListeners.size,
+      subscriptions: this.subscriptions.size
+    })
+  }
+
+  /**
+   * Get memory usage statistics
+   */
+  getMemoryStats(): {
+    connections: { eventSources: number; websockets: number }
+    listeners: { properties: number; events: number; alerts: number }
+    subscriptions: number
+    activities: number
+  } {
+    return {
+      connections: {
+        eventSources: this.eventSources.size,
+        websockets: this.websockets.size
+      },
+      listeners: {
+        properties: this.propertyListeners.size,
+        events: this.eventListeners.size,
+        alerts: this.alertListeners.size
+      },
+      subscriptions: this.subscriptions.size,
+      activities: this.connectionLastActivity.size
+    }
+  }
+
+  /**
    * Cleanup all connections and intervals
    */
   dispose(): void {
+    // Clear cleanup intervals
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval)
+    }
+    if (this.memoryCleanupInterval) {
+      clearInterval(this.memoryCleanupInterval)
+    }
+    
     // Clear all mock intervals
     this.mockIntervals.forEach(interval => clearInterval(interval))
     this.mockIntervals.clear()
@@ -379,19 +790,22 @@ class MonitoringService {
     this.mockEventGenerators.forEach(interval => clearInterval(interval))
     this.mockEventGenerators.clear()
     
-    // Close connections
-    if (this.eventSource) {
-      this.eventSource.close()
-    }
+    // Close all connections
+    this.eventSources.forEach(eventSource => eventSource.close())
+    this.eventSources.clear()
     
-    if (this.websocket) {
-      this.websocket.close()
-    }
+    this.websockets.forEach(websocket => websocket.close())
+    this.websockets.clear()
     
-    // Clear listeners
+    // Clear all data structures
+    this.subscriptions.clear()
     this.propertyListeners.clear()
     this.eventListeners.clear()
     this.alertListeners.clear()
+    this.connectionLastActivity.clear()
+    this.reconnectAttempts.clear()
+    
+    console.log('MonitoringService disposed - all resources cleaned up')
   }
 }
 

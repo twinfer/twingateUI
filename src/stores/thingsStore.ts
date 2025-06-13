@@ -72,6 +72,11 @@ export interface Thing {
   validationErrors?: string[]
 }
 
+// Helper type for Things that were discovered (has required url)
+export interface DiscoveredThingData extends Omit<Thing, 'url'> {
+  url: string // Required for discovered things
+}
+
 export interface ThingsState {
   // State
   things: Thing[]

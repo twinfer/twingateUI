@@ -1,5 +1,6 @@
 import { env } from '@/config/env'
 import { useDiscoveryEndpointsStore } from '@/stores/discoveryEndpointsStore'
+import { networkOptimizer } from './networkOptimizer'
 
 export interface DiscoveredThing {
   id: string
@@ -29,9 +30,46 @@ export interface DiscoveryResult {
 
 class DiscoveryService {
   private abortController?: AbortController
+  private readonly maxRetries = 2
+  private readonly retryDelay = 1000 // 1 second
+  private readonly maxConcurrentRequests = 5
+  private readonly connectionPoolSize = 10
+  private activeRequests = new Set<string>()
+  private requestQueue: Array<() => Promise<any>> = []
+  private isProcessingQueue = false
 
   /**
-   * Discover Things from a list of base URLs using .well-known/wot
+   * Retry a function with exponential backoff
+   */
+  private async retryWithBackoff<T>(
+    fn: () => Promise<T>,
+    retries: number = this.maxRetries,
+    delay: number = this.retryDelay
+  ): Promise<T> {
+    try {
+      return await fn()
+    } catch (error) {
+      if (retries <= 0) throw error
+      
+      // Don't retry if operation was cancelled
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw error
+      }
+      
+      // Don't retry client errors (4xx), only server errors (5xx) and network errors
+      if (error instanceof Error && error.message.includes('HTTP 4')) {
+        throw error
+      }
+      
+      console.warn(`Retrying operation after ${delay}ms. ${retries} retries left.`, error)
+      
+      await new Promise(resolve => setTimeout(resolve, delay))
+      return this.retryWithBackoff(fn, retries - 1, delay * 2)
+    }
+  }
+
+  /**
+   * Discover Things from a list of base URLs using .well-known/wot with concurrent optimization
    */
   async discoverThings(
     baseUrls: string[],
@@ -50,24 +88,52 @@ class DiscoveryService {
       }
     }
 
-    for (const baseUrl of baseUrls) {
+    // Process URLs in batches for optimal network usage
+    const batches = this.createBatches(baseUrls, this.maxConcurrentRequests)
+    
+    for (const batch of batches) {
       if (this.abortController.signal.aborted) break
 
-      result.progress.current = baseUrl
-      onProgress?.(result.progress)
+      // Process batch concurrently
+      const batchPromises = batch.map(async (baseUrl) => {
+        result.progress.current = baseUrl
+        onProgress?.(result.progress)
 
-      try {
-        const discovered = await this.scanWellKnown(baseUrl)
-        result.discovered.push(...discovered)
-      } catch (error) {
-        result.errors.push({
-          url: baseUrl,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        })
+        try {
+          const discovered = await this.retryWithBackoff(() => this.scanWellKnownOptimized(baseUrl))
+          return { baseUrl, discovered, error: null }
+        } catch (error) {
+          return {
+            baseUrl,
+            discovered: [],
+            error: error instanceof Error ? error.message : 'Unknown error'
+          }
+        }
+      })
+
+      const batchResults = await Promise.allSettled(batchPromises)
+      
+      // Process batch results
+      for (const promiseResult of batchResults) {
+        if (promiseResult.status === 'fulfilled') {
+          const { baseUrl, discovered, error } = promiseResult.value
+          
+          if (error) {
+            result.errors.push({ url: baseUrl, error })
+          } else {
+            result.discovered.push(...discovered)
+          }
+        } else {
+          // Handle promise rejection
+          result.errors.push({
+            url: 'unknown',
+            error: promiseResult.reason?.message || 'Batch processing failed'
+          })
+        }
+
+        result.progress.completed++
+        onProgress?.(result.progress)
       }
-
-      result.progress.completed++
-      onProgress?.(result.progress)
     }
 
     // Validation phase
@@ -107,37 +173,48 @@ class DiscoveryService {
   }
 
   /**
-   * Scan a base URL for Thing Descriptions using .well-known/wot
+   * Scan a base URL for Thing Descriptions using .well-known/wot (legacy method)
    */
   async scanWellKnown(baseUrl: string): Promise<DiscoveredThing[]> {
+    return this.scanWellKnownOptimized(baseUrl)
+  }
+
+  /**
+   * Optimized scanning with network optimizer
+   */
+  async scanWellKnownOptimized(baseUrl: string): Promise<DiscoveredThing[]> {
     const wellKnownUrl = this.buildWellKnownUrl(baseUrl)
     
     try {
-      const response = await fetch(wellKnownUrl, {
-        signal: this.abortController?.signal,
+      // Use network optimizer for request deduplication and caching
+      const data = await networkOptimizer.request({
+        url: wellKnownUrl,
+        method: 'GET',
         headers: {
           'Accept': 'application/json, application/ld+json',
+          'Cache-Control': 'max-age=300', // Cache for 5 minutes
         },
+        timeout: env.DISCOVERY_TIMEOUT,
+        retries: this.maxRetries,
+        cacheKey: `discovery:${wellKnownUrl}`,
+        cacheTTL: 5 * 60 * 1000, // 5 minutes
+        priority: 'normal'
       })
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-
-      const contentType = response.headers.get('content-type') || ''
-      if (!contentType.includes('application/json') && !contentType.includes('application/ld+json')) {
-        throw new Error('Invalid content type. Expected JSON or JSON-LD.')
-      }
-
-      const data = await response.json()
       
       // Handle different .well-known/wot response formats
       return this.parseWellKnownResponse(data, baseUrl)
+      
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
         throw new Error('Discovery cancelled')
       }
-      throw new Error(`Failed to discover from ${wellKnownUrl}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        throw new Error(`Network error: Unable to reach ${wellKnownUrl}. Check if the endpoint is accessible.`)
+      }
+      
+      // Re-throw with more context
+      const originalMessage = error instanceof Error ? error.message : 'Unknown error'
+      throw new Error(`Failed to discover from ${wellKnownUrl}: ${originalMessage}`)
     }
   }
 
@@ -146,17 +223,19 @@ class DiscoveryService {
    */
   async discoverSingleThing(url: string): Promise<DiscoveredThing> {
     try {
-      const response = await fetch(url, {
+      // Use network optimizer for single Thing discovery
+      const td = await networkOptimizer.request({
+        url,
+        method: 'GET',
         headers: {
           'Accept': 'application/json, application/ld+json',
         },
+        timeout: env.DISCOVERY_TIMEOUT,
+        retries: this.maxRetries,
+        cacheKey: `thing:${url}`,
+        cacheTTL: 10 * 60 * 1000, // 10 minutes for direct Thing descriptions
+        priority: 'high'
       })
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-
-      const td = await response.json()
       
       return {
         id: this.generateThingId(td),
@@ -205,6 +284,107 @@ class DiscoveryService {
     if (this.abortController) {
       this.abortController.abort()
     }
+    
+    // Cancel any pending network requests
+    networkOptimizer.cancelAllRequests()
+  }
+
+  /**
+   * Create batches for concurrent processing
+   */
+  private createBatches<T>(items: T[], batchSize: number): T[][] {
+    const batches: T[][] = []
+    for (let i = 0; i < items.length; i += batchSize) {
+      batches.push(items.slice(i, i + batchSize))
+    }
+    return batches
+  }
+
+  /**
+   * Batch discover multiple URLs
+   */
+  async batchDiscoverThings(urls: string[]): Promise<DiscoveredThing[]> {
+    if (urls.length === 0) return []
+    
+    try {
+      // Create network requests for batch processing
+      const requests = urls.map(url => ({
+        url: this.buildWellKnownUrl(url),
+        method: 'GET' as const,
+        headers: {
+          'Accept': 'application/json, application/ld+json',
+          'Cache-Control': 'max-age=300',
+        },
+        timeout: env.DISCOVERY_TIMEOUT,
+        retries: this.maxRetries,
+        cacheKey: `discovery:${url}`,
+        cacheTTL: 5 * 60 * 1000,
+        priority: 'normal' as const
+      }))
+      
+      // Use network optimizer for batch processing
+      const responses = await networkOptimizer.batchRequest(requests)
+      
+      const discovered: DiscoveredThing[] = []
+      
+      for (let i = 0; i < responses.length; i++) {
+        try {
+          const data = responses[i]
+          const baseUrl = urls[i]
+          const things = this.parseWellKnownResponse(data, baseUrl)
+          discovered.push(...things)
+        } catch (error) {
+          console.warn(`Failed to parse response for ${urls[i]}:`, error)
+        }
+      }
+      
+      return discovered
+    } catch (error) {
+      console.error('Batch discovery failed:', error)
+      // Fallback to sequential processing
+      return this.fallbackSequentialDiscovery(urls)
+    }
+  }
+
+  /**
+   * Fallback sequential discovery when batch fails
+   */
+  private async fallbackSequentialDiscovery(urls: string[]): Promise<DiscoveredThing[]> {
+    const discovered: DiscoveredThing[] = []
+    
+    for (const url of urls) {
+      try {
+        const things = await this.scanWellKnownOptimized(url)
+        discovered.push(...things)
+      } catch (error) {
+        console.warn(`Failed to discover from ${url}:`, error)
+      }
+    }
+    
+    return discovered
+  }
+
+  /**
+   * Prefetch well-known endpoints for faster discovery
+   */
+  async prefetchEndpoints(baseUrls: string[]): Promise<void> {
+    const wellKnownUrls = baseUrls.map(url => this.buildWellKnownUrl(url))
+    await networkOptimizer.prefetch(wellKnownUrls, 'low')
+  }
+
+  /**
+   * Get network statistics for discovery operations
+   */
+  getNetworkStats() {
+    return networkOptimizer.getStats()
+  }
+
+  /**
+   * Clear discovery cache
+   */
+  clearDiscoveryCache(): void {
+    networkOptimizer.clearCache('discovery:')
+    networkOptimizer.clearCache('thing:')
   }
 
   /**
