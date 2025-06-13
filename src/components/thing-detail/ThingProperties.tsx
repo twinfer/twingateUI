@@ -256,7 +256,6 @@ export function ThingProperties({ thing, properties }: ThingPropertiesProps) {
                       <Switch
                         checked={isMonitoring}
                         onCheckedChange={() => toggleMonitoring(name)}
-                        size="sm"
                       />
                     </div>
                   </div>

@@ -25,18 +25,39 @@ export interface ThingEvent {
   description?: string
 }
 
+export interface WoTThingDescription {
+  '@context'?: string | string[]
+  '@type'?: string | string[]
+  id?: string
+  title?: string
+  description?: string
+  properties?: Record<string, any>
+  actions?: Record<string, any>
+  events?: Record<string, any>
+  links?: any[]
+  forms?: any[]
+  security?: string[]
+  securityDefinitions?: Record<string, any>
+  support?: string
+  base?: string
+  version?: any
+  created?: string
+  modified?: string
+  [key: string]: any
+}
+
 export interface Thing {
   id: string
   title: string
   description?: string
-  thingDescription: object
+  thingDescription: WoTThingDescription
   created: string
   modified: string
   online: boolean
   status: 'online' | 'offline' | 'unknown' | 'connecting'
   url?: string
   lastSeen?: string
-  discoveryMethod?: string
+  discoveryMethod?: 'well-known' | 'direct-url' | 'scan'
   properties: ThingProperty[]
   actions: ThingAction[]
   events: ThingEvent[]
@@ -46,6 +67,9 @@ export interface Thing {
   // Additional metadata
   tags: string[]
   category?: string
+  // Discovery metadata
+  validationStatus?: 'valid' | 'invalid' | 'warning' | 'pending'
+  validationErrors?: string[]
 }
 
 export interface ThingsState {

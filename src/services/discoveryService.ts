@@ -118,7 +118,6 @@ class DiscoveryService {
         headers: {
           'Accept': 'application/json, application/ld+json',
         },
-        timeout: env.DISCOVERY_TIMEOUT,
       })
 
       if (!response.ok) {
@@ -151,7 +150,6 @@ class DiscoveryService {
         headers: {
           'Accept': 'application/json, application/ld+json',
         },
-        timeout: env.DISCOVERY_TIMEOUT,
       })
 
       if (!response.ok) {

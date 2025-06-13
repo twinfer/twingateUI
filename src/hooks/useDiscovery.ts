@@ -216,6 +216,8 @@ function transformDiscoveredThing(discovered: DiscoveredThing) {
     events: extractEvents(discovered.thingDescription),
     tags: extractTags(discovered.thingDescription),
     category: extractCategory(discovered.thingDescription),
+    validationStatus: discovered.validationStatus,
+    validationErrors: discovered.validationErrors,
   }
 }
 

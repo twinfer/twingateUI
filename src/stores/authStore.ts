@@ -8,6 +8,7 @@ export interface User {
   name: string
   role: string
   permissions: string[]
+  avatar?: string
 }
 
 export interface AuthState {

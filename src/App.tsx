@@ -10,6 +10,10 @@ import { ThingDetail } from './pages/ThingDetail'
 import { TDEditorPage } from './pages/TDEditor'
 import { Visualization } from './pages/Visualization'
 import { Login } from './pages/Login'
+import { LiveData } from './pages/monitoring/LiveData'
+import { Events } from './pages/monitoring/Events'
+import { Alerts } from './pages/monitoring/Alerts'
+import { MonitoringDashboard } from './pages/monitoring/MonitoringDashboard'
 import { Toaster } from './components/ui/sonner'
 import { queryClient } from './config/queryClient'
 import { validateEnv } from './config/env'
@@ -63,8 +67,20 @@ const router = createBrowserRouter([
         element: <Visualization />
       },
       {
-        path: 'monitoring/*',
-        element: <div>Monitoring Pages</div>
+        path: 'monitoring',
+        element: <MonitoringDashboard />
+      },
+      {
+        path: 'monitoring/live',
+        element: <LiveData />
+      },
+      {
+        path: 'monitoring/events',
+        element: <Events />
+      },
+      {
+        path: 'monitoring/alerts',
+        element: <Alerts />
       },
       {
         path: 'streams/*',

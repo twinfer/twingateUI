@@ -14,7 +14,6 @@ import {
   Download, 
   Eye, 
   Trash2,
-  Select,
   Globe
 } from 'lucide-react'
 import { DiscoveredThing } from '@/services/discoveryService'

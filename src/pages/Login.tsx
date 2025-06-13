@@ -2,6 +2,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useLogin } from '@/hooks/useAuth'
+import { LoginCredentials } from '@/services/authService'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -29,7 +30,12 @@ export function Login() {
   })
 
   const onSubmit = (data: LoginForm) => {
-    loginMutation.mutate(data)
+    // Ensure data matches LoginCredentials interface
+    const credentials: LoginCredentials = {
+      email: data.email,
+      password: data.password
+    }
+    loginMutation.mutate(credentials)
   }
 
   return (

@@ -29,7 +29,7 @@ export function TDEditorPage() {
         online: false,
         status: 'unknown' as const,
         lastSeen: undefined,
-        discoveryMethod: 'manual',
+        discoveryMethod: 'direct-url' as const,
         properties: extractProperties(td),
         actions: extractActions(td),
         events: extractEvents(td),
