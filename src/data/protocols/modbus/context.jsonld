@@ -1,0 +1,63 @@
+{
+    "@context": {
+        "xsd": "http://www.w3.org/2001/XMLSchema#",
+        "modv":"https://www.w3.org/2019/wot/modbus#",
+        "address": {
+            "@id": "modv:hasAddress",
+            "@type": "xsd:integer"
+        },
+        "timeout" : {
+            "@id": "modv:hasTimeout",
+            "@type": "xsd:integer"
+        }, 
+        "zeroBasedAddressing" : {
+            "@id": "modv:hasZeroBasedAddressingFlag",
+            "@type": "xsd:boolean"
+        }, 
+        "mostSignificantByte" : {
+            "@id": "modv:hasMostSignificantByte",
+            "@type": "xsd:boolean"
+        }, 
+        "mostSignificantWord" : {
+            "@id": "modv:hasMostSignificantWord",
+            "@type": "xsd:boolean"
+        }, 
+        "quantity" : {
+            "@id": "modv:hasQuantity",
+            "@type": "xsd:integer"
+        }, 
+        "pollingTime" : {
+            "@id": "modv:hasPollingTime",
+            "@type": "xsd:integer"
+        }, 
+        "unitID": {
+            "@id": "modv:hasUnitID",
+            "@type": "xsd:integer"
+        },
+        "entity" : {
+            "@id": "modv:hasEntity",
+            "@type": "@vocab"
+        }, 
+        "function" : {
+            "@id": "modv:hasFunction",
+            "@type": "@vocab"
+        },
+        "type" : {
+            "@id": "modv:hasPayloadDataType",
+            "@type": "@vocab"
+        },
+        "Coil": "modv:Coil",
+        "DiscreteInput" : "modv:DiscreteInput",
+        "HoldingRegister": "modv:HoldingRegister",
+        "InputRegister": "modv:InputRegister",
+        "readCoil": "modv:readCoil",
+        "readDiscreteInput": "modv:readDiscreteInput",
+        "readHoldingRegister" : "modv:readHoldingRegister",
+        "readInputRegister": "modv:readInputRegister",
+        "writeSingleCoil": "modv:writeSingleCoil",
+        "writeMultipleCoils": "modv:writeMultipleCoils",
+        "writeMultipleHoldingRegister": "modv:writeMultipleHoldingRegister",
+        "writeSingleHoldingRegister" : "modv:writeSingleHoldingRegister"
+
+    }
+}
