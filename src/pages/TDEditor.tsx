@@ -3,56 +3,99 @@ import { TDEditor } from '@/components/td-editor/TDEditor'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/stores/uiStore'
-import { useThingsStore } from '@/stores/thingsStore'
 import { ValidationResult } from '@/services/tdValidationService'
-import { ArrowLeft, FileText, Save } from 'lucide-react'
+import { ArrowLeft, FileText } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { ThingsApi } from '@/api/generated/src/apis/ThingsApi'
+import { createApiConfiguration } from '@/services/api'
+import { optimizedApiService } from '@/services/optimizedApiService'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 export function TDEditorPage() {
   const navigate = useNavigate()
   const { showToast } = useToast()
-  const { addThing } = useThingsStore()
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
 
   const handleSave = async (tdJson: string) => {
+    if (isSaving) return
+    
+    // Early validation check
+    if (!tdJson || !tdJson.trim()) {
+      showToast({
+        title: 'Save Failed',
+        description: 'Thing Description cannot be empty.',
+        type: 'error'
+      })
+      return
+    }
+    
+    setIsSaving(true)
     try {
-      const td = JSON.parse(tdJson)
+      // Validate JSON first
+      let td: any
+      try {
+        td = JSON.parse(tdJson)
+      } catch (parseError) {
+        throw new SyntaxError('Invalid JSON format. Please check your Thing Description syntax.')
+      }
       
-      // Create a new Thing from the TD
-      const newThing = {
-        id: td.id || `thing-${Date.now()}`,
-        title: td.title || 'Untitled Thing',
-        description: td.description,
-        thingDescription: td,
-        created: new Date().toISOString(),
-        modified: new Date().toISOString(),
-        online: false,
-        status: 'unknown' as const,
-        lastSeen: undefined,
-        discoveryMethod: 'direct-url' as const,
-        properties: extractProperties(td),
-        actions: extractActions(td),
-        events: extractEvents(td),
-        tags: extractTags(td),
-        category: extractCategory(td)
+      // Additional validation - check if it's an empty object
+      if (!td || Object.keys(td).length === 0) {
+        throw new Error('Thing Description cannot be empty.')
+      }
+      
+      // Prepare registration request
+      const registrationRequest = {
+        thingDescription: tdJson,
+        options: {
+          // Optional: add any registration options
+          autoGenerate: true,
+          validateOnly: false
+        }
       }
 
-      addThing(newThing)
+      // Use optimized API service for better network efficiency
+      const response = await optimizedApiService.post('/api/things', registrationRequest, {
+        cache: false,
+        retries: 2,
+        priority: 'high'
+      })
       
       showToast({
         title: 'Thing Description Saved',
-        description: `"${newThing.title}" has been added to your Things`,
+        description: `"${td.title || 'Untitled Thing'}" has been registered successfully`,
         type: 'success'
       })
       
       // Navigate to Things page
       navigate('/things')
     } catch (error) {
+      console.error('Save failed:', error)
+      
+      let errorMessage = 'Failed to save Thing Description.'
+      
+      if (error instanceof SyntaxError) {
+        errorMessage = 'Invalid JSON format. Please check your Thing Description syntax.'
+      } else if (error instanceof Error) {
+        if (error.message.includes('400')) {
+          errorMessage = 'Invalid Thing Description. Please check the W3C WoT specification compliance.'
+        } else if (error.message.includes('409')) {
+          errorMessage = 'A Thing with this ID already exists. Please use a different ID or update the existing Thing.'
+        } else if (error.message.includes('422')) {
+          errorMessage = 'Thing Description validation failed. Please ensure all required fields are present.'
+        } else {
+          errorMessage = `Server error: ${error.message}`
+        }
+      }
+      
       showToast({
         title: 'Save Failed',
-        description: 'Failed to save Thing Description. Please check the JSON format.',
+        description: errorMessage,
         type: 'error'
       })
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -61,159 +104,73 @@ export function TDEditorPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={() => navigate('/things')}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Things
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold">Thing Description Editor</h1>
-          <p className="text-muted-foreground">
-            Create and edit W3C Web of Things (WoT) Thing Descriptions
-          </p>
-        </div>
-      </div>
-
-      {/* Info card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            About Thing Descriptions
-          </CardTitle>
-          <CardDescription>
-            Thing Descriptions (TDs) are the core building blocks of the Web of Things. 
-            They provide a standardized way to describe IoT devices, their capabilities, 
-            and how to interact with them.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div>
-              <h4 className="font-medium mb-2">Properties</h4>
-              <p className="text-muted-foreground">
-                Define readable/writable attributes of your Thing, like temperature or status.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-medium mb-2">Actions</h4>
-              <p className="text-muted-foreground">
-                Specify operations that can be invoked on your Thing, like turning on/off.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-medium mb-2">Events</h4>
-              <p className="text-muted-foreground">
-                Describe notifications your Thing can emit, like alarms or status changes.
-              </p>
-            </div>
+    <ErrorBoundary>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigate('/things')}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Things
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Thing Description Editor</h1>
+            <p className="text-muted-foreground">
+              Create and edit W3C Web of Things (WoT) Thing Descriptions
+            </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Main editor */}
-      <TDEditor
-        onSave={handleSave}
-        onValidate={handleValidate}
-        height="500px"
-      />
+        {/* Main editor */}
+        <ErrorBoundary>
+          <TDEditor
+            onSave={handleSave}
+            onValidate={handleValidate}
+            height="500px"
+            isSaving={isSaving}
+          />
+        </ErrorBoundary>
 
-      {/* Save hint */}
-      {validationResult?.isValid && (
-        <Card className="border-green-200 bg-green-50">
-          <CardContent className="flex items-center gap-3 p-4">
-            <Save className="h-5 w-5 text-green-600" />
-            <div>
-              <p className="text-sm font-medium text-green-800">
-                Thing Description is valid!
-              </p>
-              <p className="text-xs text-green-600">
-                Click the Save button in the editor to add this Thing to your collection.
-              </p>
+        {/* Info card - moved to bottom with smaller font */}
+        <Card className="border-muted">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <FileText className="h-4 w-4" />
+              About Thing Descriptions
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Thing Descriptions (TDs) are the core building blocks of the Web of Things. 
+              They provide a standardized way to describe IoT devices, their capabilities, 
+              and how to interact with them.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+              <div>
+                <h4 className="font-medium mb-1 text-sm">Properties</h4>
+                <p className="text-muted-foreground">
+                  Define readable/writable attributes of your Thing, like temperature or status.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-medium mb-1 text-sm">Actions</h4>
+                <p className="text-muted-foreground">
+                  Specify operations that can be invoked on your Thing, like turning on/off.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-medium mb-1 text-sm">Events</h4>
+                <p className="text-muted-foreground">
+                  Describe notifications your Thing can emit, like alarms or status changes!.
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
-      )}
-    </div>
+      </div>
+    </ErrorBoundary>
   )
-}
-
-// Helper functions to extract TD components
-function extractProperties(td: any) {
-  if (!td.properties) return []
-  
-  return Object.entries(td.properties).map(([key, prop]: [string, any]) => ({
-    id: key,
-    name: prop.title || key,
-    type: prop.type || 'unknown',
-    value: null,
-    lastUpdated: new Date().toISOString(),
-    writable: prop.writeOnly !== true,
-    observable: prop.observable === true,
-  }))
-}
-
-function extractActions(td: any) {
-  if (!td.actions) return []
-  
-  return Object.entries(td.actions).map(([key, action]: [string, any]) => ({
-    id: key,
-    name: action.title || key,
-    input: action.input,
-    output: action.output,
-    description: action.description,
-  }))
-}
-
-function extractEvents(td: any) {
-  if (!td.events) return []
-  
-  return Object.entries(td.events).map(([key, event]: [string, any]) => ({
-    id: key,
-    name: event.title || key,
-    data: event.data,
-    description: event.description,
-  }))
-}
-
-function extractTags(td: any): string[] {
-  const tags: string[] = []
-  
-  if (td['@type']) {
-    const types = Array.isArray(td['@type']) ? td['@type'] : [td['@type']]
-    tags.push(...types.filter((type: any) => typeof type === 'string'))
-  }
-  
-  if (td.securityDefinitions) {
-    Object.keys(td.securityDefinitions).forEach(scheme => {
-      tags.push(`security:${scheme}`)
-    })
-  }
-  
-  return tags
-}
-
-function extractCategory(td: any): string | undefined {
-  if (td['@type']) {
-    const types = Array.isArray(td['@type']) ? td['@type'] : [td['@type']]
-    
-    for (const type of types) {
-      if (typeof type === 'string') {
-        if (type.includes('Sensor')) return 'sensor'
-        if (type.includes('Actuator')) return 'actuator'
-        if (type.includes('Light')) return 'lighting'
-        if (type.includes('Thermostat') || type.includes('Temperature')) return 'climate'
-        if (type.includes('Camera') || type.includes('Video')) return 'security'
-        if (type.includes('Motor') || type.includes('Pump')) return 'actuator'
-      }
-    }
-  }
-  
-  return 'other'
 }
