@@ -28,6 +28,7 @@ import {
 import { useThingsStore } from '@/stores/thingsStore'
 import { useMonitoringStore } from '@/stores/monitoringStore'
 import { WoTEvent, monitoringService } from '@/services/monitoringService'
+import { MonitoringErrorBoundary } from '@/components/MonitoringErrorBoundary'
 
 interface EventCardProps {
   event: WoTEvent
@@ -256,7 +257,8 @@ export function Events() {
   ).length
 
   return (
-    <div className="space-y-6">
+    <MonitoringErrorBoundary componentName="Events">
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -444,6 +446,7 @@ export function Events() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </MonitoringErrorBoundary>
   )
 }

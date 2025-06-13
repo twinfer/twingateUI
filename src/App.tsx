@@ -14,6 +14,7 @@ import { LiveData } from './pages/monitoring/LiveData'
 import { Events } from './pages/monitoring/Events'
 import { Alerts } from './pages/monitoring/Alerts'
 import { MonitoringDashboard } from './pages/monitoring/MonitoringDashboard'
+import { ErrorBoundary, RouteErrorElement } from './components/ErrorBoundary'
 import { Toaster } from './components/ui/sonner'
 import { queryClient } from './config/queryClient'
 import { validateEnv } from './config/env'
@@ -24,7 +25,8 @@ validateEnv()
 const router = createBrowserRouter([
   {
     path: '/login',
-    element: <Login />
+    element: <Login />,
+    errorElement: <RouteErrorElement />
   },
   {
     path: '/',
@@ -33,6 +35,7 @@ const router = createBrowserRouter([
         <Layout />
       </ProtectedRoute>
     ),
+    errorElement: <RouteErrorElement />,
     children: [
       {
         index: true,
@@ -40,55 +43,68 @@ const router = createBrowserRouter([
       },
       {
         path: 'dashboard',
-        element: <Dashboard />
+        element: <Dashboard />,
+        errorElement: <RouteErrorElement />
       },
       {
         path: 'things',
-        element: <Things />
+        element: <Things />,
+        errorElement: <RouteErrorElement />
       },
       {
         path: 'things/:id',
-        element: <ThingDetail />
+        element: <ThingDetail />,
+        errorElement: <RouteErrorElement />
       },
       {
         path: 'things/discover',
-        element: <div>Thing Discovery Page</div>
+        element: <div>Thing Discovery Page</div>,
+        errorElement: <RouteErrorElement />
       },
       {
         path: 'things/create',
-        element: <TDEditorPage />
+        element: <TDEditorPage />,
+        errorElement: <RouteErrorElement />
       },
       {
         path: 'things/editor',
-        element: <TDEditorPage />
+        element: <TDEditorPage />,
+        errorElement: <RouteErrorElement />
       },
       {
         path: 'visualization',
-        element: <Visualization />
+        element: <Visualization />,
+        errorElement: <RouteErrorElement />
       },
       {
         path: 'monitoring',
-        element: <MonitoringDashboard />
+        element: <MonitoringDashboard />,
+        errorElement: <RouteErrorElement />
       },
       {
         path: 'monitoring/live',
-        element: <LiveData />
+        element: <LiveData />,
+        errorElement: <RouteErrorElement />
       },
       {
         path: 'monitoring/events',
-        element: <Events />
+        element: <Events />,
+        errorElement: <RouteErrorElement />
       },
       {
         path: 'monitoring/alerts',
-        element: <Alerts />
+        element: <Alerts />,
+        errorElement: <RouteErrorElement />
       },
       {
         path: 'streams/*',
-        element: <div>Streams Pages</div>
+        element: <div>Streams Pages</div>,
+        errorElement: <RouteErrorElement />
       },
       {
         path: 'settings/*',
-        element: <div>Settings Pages</div>
+        element: <div>Settings Pages</div>,
+        errorElement: <RouteErrorElement />
       }
     ]
   }
@@ -96,13 +112,15 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="system" storageKey="twingate-ui-theme">
-        <RouterProvider router={router} />
-        <Toaster />
-        {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
-      </ThemeProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="system" storageKey="twingate-ui-theme">
+          <RouterProvider router={router} />
+          <Toaster />
+          {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   )
 }
 

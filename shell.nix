@@ -6,7 +6,6 @@ pkgs.mkShell {
     pkgs.python3
     pkgs.python3Packages.pip
     pkgs.ripgrep
-    
     pkgs.openapi-generator-cli
     
   ];

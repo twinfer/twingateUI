@@ -38,6 +38,7 @@ import { useThingsStore } from '@/stores/thingsStore'
 import { useMonitoringStore } from '@/stores/monitoringStore'
 import { Alert, AlertRule } from '@/services/monitoringService'
 import { AlertRuleBuilder } from '@/components/monitoring/AlertRuleBuilder'
+import { MonitoringErrorBoundary } from '@/components/MonitoringErrorBoundary'
 
 interface AlertCardProps {
   alert: Alert
@@ -312,7 +313,8 @@ export function Alerts() {
   const activeRules = alertRules.filter(rule => rule.enabled).length
 
   return (
-    <div className="space-y-6">
+    <MonitoringErrorBoundary componentName="Alerts">
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -506,6 +508,7 @@ export function Alerts() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </MonitoringErrorBoundary>
   )
 }

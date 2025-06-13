@@ -26,6 +26,7 @@ import {
 import { useThingsStore } from '@/stores/thingsStore'
 import { useMonitoringStore } from '@/stores/monitoringStore'
 import { PropertyValue, monitoringService } from '@/services/monitoringService'
+import { MonitoringErrorBoundary } from '@/components/MonitoringErrorBoundary'
 
 interface PropertyStreamCardProps {
   thingId: string
@@ -249,7 +250,8 @@ export function LiveData() {
   const activeSubscriptionsCount = subscriptions.filter(sub => sub.active).length
 
   return (
-    <div className="space-y-6">
+    <MonitoringErrorBoundary componentName="Live Data">
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -383,6 +385,7 @@ export function LiveData() {
           })}
         </div>
       )}
-    </div>
+      </div>
+    </MonitoringErrorBoundary>
   )
 }
