@@ -2,4 +2,3 @@
 export * from './useAuth'
 export * from './useDiscovery'
 export * from './useMemoryManager'
-export * from './useNetworkOptimization'

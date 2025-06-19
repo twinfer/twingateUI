@@ -35,12 +35,6 @@ export const queryClient = new QueryClient({
   // Memory management configuration
   queryCache: undefined, // Use default with our settings
   mutationCache: undefined, // Use default
-  // Global settings for memory optimization
-  logger: {
-    log: console.log,
-    warn: console.warn,
-    error: console.error,
-  },
 })
 
 // Query keys factory for consistent cache management

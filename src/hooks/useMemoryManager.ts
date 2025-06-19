@@ -39,8 +39,8 @@ export function useMemoryManager() {
  * Hook for monitoring service memory statistics
  */
 export function useMemoryMonitoring(intervalMs: number = 30000) {
-  const memoryStats = useRef<ReturnType<typeof monitoringService.getMemoryStats>>()
-  const { addCleanup } = useMemoryManager()
+  const memoryStats = useRef<ReturnType<typeof monitoringService.getMemoryStats> | undefined>(undefined)
+  const cleanupFunctions = useRef<Array<() => void>>([])
 
   useEffect(() => {
     const updateStats = () => {
@@ -52,10 +52,14 @@ export function useMemoryMonitoring(intervalMs: number = 30000) {
 
     // Set up interval
     const interval = setInterval(updateStats, intervalMs)
-    addCleanup(() => clearInterval(interval))
+    cleanupFunctions.current.push(() => clearInterval(interval))
 
-    return () => clearInterval(interval)
-  }, [intervalMs, addCleanup])
+    return () => {
+      clearInterval(interval)
+      cleanupFunctions.current.forEach(fn => fn())
+      cleanupFunctions.current = []
+    }
+  }, [intervalMs])
 
   const getStats = useCallback(() => memoryStats.current, [])
 

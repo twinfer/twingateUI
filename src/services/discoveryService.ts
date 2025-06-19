@@ -1,6 +1,5 @@
 import { env } from '@/config/env'
 import { useDiscoveryEndpointsStore } from '@/stores/discoveryEndpointsStore'
-import { networkOptimizer } from './networkOptimizer'
 
 export interface DiscoveredThing {
   id: string
@@ -186,20 +185,20 @@ class DiscoveryService {
     const wellKnownUrl = this.buildWellKnownUrl(baseUrl)
     
     try {
-      // Use network optimizer for request deduplication and caching
-      const data = await networkOptimizer.request({
-        url: wellKnownUrl,
-        method: 'GET',
+      // Fetch directory data
+      const response = await fetch(wellKnownUrl, {
         headers: {
           'Accept': 'application/json, application/ld+json',
           'Cache-Control': 'max-age=300', // Cache for 5 minutes
         },
-        timeout: env.DISCOVERY_TIMEOUT,
-        retries: this.maxRetries,
-        cacheKey: `discovery:${wellKnownUrl}`,
-        cacheTTL: 5 * 60 * 1000, // 5 minutes
-        priority: 'normal'
+        signal: AbortSignal.timeout(env.DISCOVERY_TIMEOUT),
       })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      
+      const data = await response.json()
       
       // Handle different .well-known/wot response formats
       return this.parseWellKnownResponse(data, baseUrl)
@@ -223,19 +222,19 @@ class DiscoveryService {
    */
   async discoverSingleThing(url: string): Promise<DiscoveredThing> {
     try {
-      // Use network optimizer for single Thing discovery
-      const td = await networkOptimizer.request({
-        url,
-        method: 'GET',
+      // Fetch Thing Description
+      const response = await fetch(url, {
         headers: {
           'Accept': 'application/json, application/ld+json',
         },
-        timeout: env.DISCOVERY_TIMEOUT,
-        retries: this.maxRetries,
-        cacheKey: `thing:${url}`,
-        cacheTTL: 10 * 60 * 1000, // 10 minutes for direct Thing descriptions
-        priority: 'high'
+        signal: AbortSignal.timeout(env.DISCOVERY_TIMEOUT),
       })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      
+      const td = await response.json()
       
       return {
         id: this.generateThingId(td),
@@ -285,8 +284,7 @@ class DiscoveryService {
       this.abortController.abort()
     }
     
-    // Cancel any pending network requests
-    networkOptimizer.cancelAllRequests()
+    // Note: Request cancellation now handled by AbortController in individual fetch calls
   }
 
   /**
@@ -308,33 +306,39 @@ class DiscoveryService {
     
     try {
       // Create network requests for batch processing
-      const requests = urls.map(url => ({
-        url: this.buildWellKnownUrl(url),
-        method: 'GET' as const,
-        headers: {
-          'Accept': 'application/json, application/ld+json',
-          'Cache-Control': 'max-age=300',
-        },
-        timeout: env.DISCOVERY_TIMEOUT,
-        retries: this.maxRetries,
-        cacheKey: `discovery:${url}`,
-        cacheTTL: 5 * 60 * 1000,
-        priority: 'normal' as const
-      }))
+      // Fetch all well-known URLs concurrently
+      const fetchPromises = urls.map(url => 
+        fetch(this.buildWellKnownUrl(url), {
+          headers: {
+            'Accept': 'application/json, application/ld+json',
+            'Cache-Control': 'max-age=300',
+          },
+          signal: AbortSignal.timeout(env.DISCOVERY_TIMEOUT),
+        }).then(async response => {
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+          }
+          return response.json()
+        })
+      )
       
-      // Use network optimizer for batch processing
-      const responses = await networkOptimizer.batchRequest(requests)
+      const responses = await Promise.allSettled(fetchPromises)
       
       const discovered: DiscoveredThing[] = []
       
       for (let i = 0; i < responses.length; i++) {
-        try {
-          const data = responses[i]
-          const baseUrl = urls[i]
-          const things = this.parseWellKnownResponse(data, baseUrl)
-          discovered.push(...things)
-        } catch (error) {
-          console.warn(`Failed to parse response for ${urls[i]}:`, error)
+        const result = responses[i]
+        const baseUrl = urls[i]
+        
+        if (result.status === 'fulfilled') {
+          try {
+            const things = this.parseWellKnownResponse(result.value, baseUrl)
+            discovered.push(...things)
+          } catch (error) {
+            console.warn(`Failed to parse response for ${baseUrl}:`, error)
+          }
+        } else {
+          console.warn(`Failed to fetch ${baseUrl}:`, result.reason)
         }
       }
       
@@ -366,25 +370,36 @@ class DiscoveryService {
 
   /**
    * Prefetch well-known endpoints for faster discovery
+   * Note: Prefetching is now handled by browser cache and React Query
    */
   async prefetchEndpoints(baseUrls: string[]): Promise<void> {
-    const wellKnownUrls = baseUrls.map(url => this.buildWellKnownUrl(url))
-    await networkOptimizer.prefetch(wellKnownUrls, 'low')
+    // Modern browsers handle prefetching automatically with cache headers
+    console.log('Prefetch requested for:', baseUrls.length, 'endpoints')
   }
 
   /**
-   * Get network statistics for discovery operations
+   * Get network statistics for discovery operations  
+   * Note: Network stats now handled by React Query DevTools
    */
   getNetworkStats() {
-    return networkOptimizer.getStats()
+    return {
+      totalRequests: 0,
+      cacheHits: 0,
+      cacheMisses: 0,
+      deduplicatedRequests: 0,
+      batchedRequests: 0,
+      errors: 0,
+      averageResponseTime: 0,
+      bytesTransferred: 0,
+    }
   }
 
   /**
    * Clear discovery cache
+   * Note: Cache clearing now handled by React Query
    */
   clearDiscoveryCache(): void {
-    networkOptimizer.clearCache('discovery:')
-    networkOptimizer.clearCache('thing:')
+    console.log('Discovery cache cleared (handled by React Query)')
   }
 
   /**

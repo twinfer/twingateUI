@@ -34,7 +34,7 @@ npm run preview         # Preview production build locally
 npm run lint            # Run ESLint on all files
 
 # API Client Generation
-npm run openapi         # Generate TypeScript client from swagger/swagger.yaml
+npm run orval           # Generate TypeScript client with React Query hooks from swagger/swagger.yaml
 ```
 
 ## Architecture Overview
@@ -77,7 +77,7 @@ npm run openapi         # Generate TypeScript client from swagger/swagger.yaml
 
 2. **Data Fetching**: TanStack Query handles server state with proper caching, background updates, and error handling. Query keys are centralized in `queryClient.ts`.
 
-3. **API Integration**: Auto-generated TypeScript client from OpenAPI spec. Always regenerate with `npm run openapi` after API changes.
+3. **API Integration**: Auto-generated TypeScript client with React Query hooks from OpenAPI spec using Orval. Always regenerate with `npm run orval` after API changes.
 
 4. **Component Architecture**: Feature-based organization with shadcn/ui base components. Components follow container/presentation patterns.
 
@@ -151,7 +151,7 @@ The application uses four main Zustand stores:
 
 ## Development Notes
 
-1. **API Client**: Never manually edit files in `/src/api/generated/`. Use `npm run openapi` to regenerate from the swagger spec.
+1. **API Client**: Never manually edit files in `/src/api/generated/`. Use `npm run orval` to regenerate from the swagger spec with React Query hooks.
 
 2. **State Persistence**: Auth and discovery endpoints persist to localStorage automatically.
 

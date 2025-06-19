@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+// Alert component not available, using Card instead
 import { memoryDiagnostics, performanceMonitor } from '@/lib/memoryDiagnostics'
 import { useMemoryMonitoring } from '@/hooks/useMemoryManager'
 import { 
@@ -129,9 +129,11 @@ export function MemoryMonitor({ autoRefresh = true, refreshInterval = 10000 }: M
 
       {/* Memory Leak Analysis */}
       {analysis.hasLeaks && (
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
+        <Card className="border-red-500 bg-red-50">
+          <CardContent className="pt-4">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-red-500" />
+              <div>
             <div className="space-y-2">
               <div className="font-semibold">Potential Memory Leaks Detected</div>
               <div className="space-y-1">
@@ -146,8 +148,10 @@ export function MemoryMonitor({ autoRefresh = true, refreshInterval = 10000 }: M
                 ))}
               </div>
             </div>
-          </AlertDescription>
-        </Alert>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Current Memory Stats */}

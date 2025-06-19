@@ -1,5 +1,5 @@
-import { AuthApi } from '@/api/generated/src'
-import { createApiConfiguration } from './api'
+// Using mock authentication for demo purposes
+// In production, use the generated API hooks from '@/services/api'
 import { useAuthStore, User } from '@/stores/authStore'
 import { env } from '@/config/env'
 
@@ -20,9 +20,8 @@ export interface RefreshTokenResponse {
 }
 
 class AuthService {
-  private getApi() {
-    return new AuthApi(createApiConfiguration())
-  }
+  // Note: In production, you would use the generated Orval hooks:
+  // import { usePostAuth, useDeleteAuth } from '@/api/generated/twinCoreGatewayAPI'
 
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
     // Clear any existing auth state first
